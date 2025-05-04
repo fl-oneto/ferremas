@@ -1,22 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import User
 
-# rol
-class Rol(models.Model):
-    nombre = models.CharField(max_length=100)
-    descripcion = models.TextField()
-
-    def __str__(self):
-        return self.nombre
-
-# usuario
-class Usuario(models.Model):
-    nombre = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=128)
-    rol = models.ForeignKey(Rol, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.nombre
 
 # región
 class Region(models.Model):
@@ -35,7 +19,7 @@ class Comuna(models.Model):
 
 # dirección
 class Direccion(models.Model):
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     calle = models.CharField(max_length=255)
     numero = models.CharField(max_length=20)
     comuna = models.ForeignKey(Comuna, on_delete=models.CASCADE)
@@ -46,7 +30,7 @@ class Direccion(models.Model):
 
 # teléfono
 class Telefono(models.Model):
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     numero = models.CharField(max_length=20)
 
     def __str__(self):
@@ -73,7 +57,6 @@ class UnidadMedida(models.Model):
 class Producto(models.Model):
     nombre = models.CharField(max_length=255)
     descripcion = models.TextField()
-    precio = models.FloatField()
     stock = models.IntegerField()
     precio_venta = models.IntegerField()
     precio_compra = models.IntegerField()
@@ -85,24 +68,25 @@ class Producto(models.Model):
 
 # carrito
 class Carrito(models.Model):
-    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    session_key = models.CharField(max_length=40, null=True, blank=True)
     fecha_creacion = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return f"Carrito de {self.usuario.nombre}"
+        return f"Carrito de {self.usuario.email}"
 
 # ItemCarrito
 class ItemCarrito(models.Model):
     carrito = models.ForeignKey(Carrito, on_delete=models.CASCADE)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    cantidad = models.IntegerField()
+    cantidad = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return f"{self.cantidad} x {self.producto.nombre}"
 
 # pedido
 class Pedido(models.Model):
-    cliente = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha = models.DateField(auto_now_add=True)
     estado = models.CharField(max_length=50)
     total = models.FloatField()
