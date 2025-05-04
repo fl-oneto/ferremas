@@ -1017,7 +1017,9 @@
                       </button>
                   </span>
               </div>
-              <a href="#" class="nav-link">Añadir al Carrito <iconify-icon icon="uil:shopping-cart"></a>
+              <a href="{% url 'agregar_al_carrito' producto.id %}" class="nav-link">
+                Añadir al Carrito <iconify-icon icon="uil:shopping-cart"></iconify-icon>
+              </a>            
             </div>
           </div>
         </div>

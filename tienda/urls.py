@@ -15,6 +15,8 @@ urlpatterns = [
     path('producto/<int:producto_id>/', views.detalle_producto, name='detalle_producto'),
     path('categoria/<int:categoria_id>/', views.productos_por_categoria, name='productos_por_categoria'),
     path('pagar/', views.pagar, name='pagar'),
+    path('buscar-producto/', views.buscar_producto, name='buscar_producto'),
+
 
 
 ]

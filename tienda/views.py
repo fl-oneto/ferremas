@@ -1,6 +1,6 @@
 from django import forms
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import Categoria, Producto, Region, Comuna, Direccion, Telefono, UnidadMedida, Carrito, ItemCarrito, Pedido, DetallePedido, MetodoPago, Pago
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
@@ -215,4 +215,7 @@ def pagar(request):
 
     return render(request, 'pagar.html', context)
 
-
+def buscar_producto(request):
+    q = request.GET.get('q', '')
+    resultados = Producto.objects.filter(nombre__icontains=q).values('id', 'nombre')[:10]
+    return JsonResponse(list(resultados), safe=False)

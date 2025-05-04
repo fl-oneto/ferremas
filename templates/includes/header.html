@@ -22,10 +22,12 @@
               {% endfor %}
             </select>
           </div>
-          <div class="col-11 col-md-7">
-            <form id="search-form" class="text-center" action="index.html" method="post">
-              <input type="text" class="form-control border-0 bg-transparent" placeholder="Buscar producto en Ferremas" />
+          <div class="col-11 col-md-7 position-relative">
+            <form id="search-form" class="text-center" method="get" autocomplete="off">
+              <input type="text" id="search-input" class="form-control border-0 bg-transparent" placeholder="Buscar producto en Ferremas" />
+              <div id="search-results" class="list-group mt-2 position-absolute w-100"></div>
             </form>
+            
           </div>
           <div class="col-1">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -39,29 +41,38 @@
         <ul class="d-flex justify-content-end list-unstyled m-0">
           <li>
             {% if user.is_authenticated %}
-              <span>Hola, {{ user.email }}</span>
+              
               <div class="d-flex align-items-center">
-                <a href="{% url 'myaccount' %}" class="rounded-circle bg-light p-2 mx-1" title="Mi Cuenta">
-                  <img src="{% static 'images/usuario.png' %}" style="width: 24px; height: 24px;" alt="Usuario" />
+                <a href="{% url 'myaccount' %}" class="d-flex align-items-center justify-content-center bg-light rounded-circle mx-1" title="Mi Cuenta" style="width: 40px; height: 40px;">
+                  <svg width="24" height="24" viewBox="0 0 24 24">
+                    <use xlink:href="#user"></use>
+                  </svg>
                 </a>
+                
                 
                 <form method="POST" action="{% url 'logout' %}" class="m-0">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-link p-0 border-0 bg-transparent">
-                    <a href="{% url 'logout' %}" class="rounded-circle bg-light p-2 mx-1" title="Cerrar Sesión"><img src="{% static 'images/cerrar-sesion.png' %}" style="width: 24px; height: 24px;" alt="Usuario" /></a>
+                    <a href="{% url 'logout' %}" class="rounded-circle bg-light p-2 mx-1" title="Cerrar Sesión">
+                      <svg width="24" height="24" viewBox="0 0 24 24">
+                        <use xlink:href="#logout"></use>
+                      </svg>
+                    </a>
                   </button>
                 </form>
               </div>
               
             {% else %}
             <li>Iniciar Sesión 
-            <a href="{% url 'login' %}" class="rounded-circle bg-light p-2 mx-1"><img src="{% static 'images/usuario.png' %}" style="width: 24px; height: 24px;" alt="Usuario" /></a>
+            <a href="{% url 'login' %}" class="rounded-circle bg-light p-2 mx-1"><svg width="24" height="24" viewBox="0 0 24 24">
+              <use xlink:href="#user"></use>
+            </svg></a>
             </li>
             {% endif %}
           </li>
           
           <li class="d-lg-none">
-            <a href="#" class="rounded-circle bg-light p-2 mx-1" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">
+            <a href="{% url 'ver_carrito' %}" class="rounded-circle bg-light p-2 mx-1" >
               <svg width="24" height="24" viewBox="0 0 24 24">
                 <use xlink:href="#cart"></use>
               </svg>
@@ -76,17 +87,26 @@
           </li>
         </ul>
 
-        <div class="cart text-end d-none d-lg-block dropdown">
-          <button class="border-0 bg-transparent d-flex flex-column gap-2 lh-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">
-            <a href="{% url 'ver_carrito' %}"<span class="fs-6 text-muted dropdown-toggle">Carrito</span></a>
-            <span class="cart-total fs-5 fw-bold">{{ total|formatear_pesos }}</span>
-          </button>
-        </div>
+        <div class="text-end d-none d-lg-block">
+          <div class="d-flex align-items-center justify-content-end mb-1">
+              <a href="{% url 'ver_carrito' %}" class="rounded-circle bg-light p-2 d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="Carrito">
+                  <svg width="24" height="24" viewBox="0 0 24 24">
+                      <use xlink:href="#cart"></use>
+                  </svg>
+              </a>
+              <span class="ms-2">Carrito</span>
+          </div>
+          <div>
+              <h7>{{ total|formatear_pesos }}</h7>
+          </div>
+      </div>
+        
       </div>
     </div>
   </div>
-
-  {% comment %} <div class="container-fluid">
+  
+  
+   <div class="container-fluid">
     <div class="row py-3">
       <div class="d-flex justify-content-center justify-content-sm-between align-items-center">
         <nav class="main-menu d-flex navbar navbar-expand-lg">
@@ -96,18 +116,14 @@
               <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body">
-              <select class="filter-categories border-0 mb-0 me-5">
-                <option>Shop by Departments</option>
-                <option>Groceries</option>
-                <option>Drinks</option>
-                <option>Chocolates</option>
-              </select>
+              
               <ul class="navbar-nav justify-content-end menu-list list-unstyled d-flex gap-md-3 mb-0">
+                <li>
+                  <a href="#women" class="nav-link"><span>Hola, {{ user.email }}</a></span>
+                </li>  
                 <li class="nav-item active">
-                  <a href="#women" class="nav-link">Women</a>
                 </li>
                 <li class="nav-item dropdown">
-                  <a href="#men" class="nav-link">Men</a>
                 </li>
                 <li class="nav-item">
                   <a href="#kids" class="nav-link">Kids</a>
@@ -171,5 +187,35 @@
         </nav>
       </div>
     </div>
-  </div> {% endcomment %}
+  </div>
 </header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('search-input');
+    const results = document.getElementById('search-results');
+  
+    input.addEventListener('input', async () => {
+      const query = input.value.trim();
+      if (query.length < 2) {
+        results.innerHTML = '';
+        return;
+      }
+  
+      try {
+        const response = await fetch(`/buscar-producto/?q=${encodeURIComponent(query)}`);
+        const productos = await response.json();
+  
+        results.innerHTML = productos.length
+          ? productos.map(p => `
+              <a href="/producto/${p.id}/" class="list-group-item list-group-item-action">
+                ${p.nombre}
+              </a>`).join('')
+          : `<div class="list-group-item">No se encontraron productos</div>`;
+      } catch (err) {
+        console.error('Error en la búsqueda:', err);
+      }
+    });
+  });
+  </script>
+  
