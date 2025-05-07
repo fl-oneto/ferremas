@@ -1,108 +1,129 @@
 {% load static %}
+{% load filtros_personalizados %}
 
 <header>
   <div class="container-fluid">
     <div class="row py-3 border-bottom">
-      
       <div class="col-sm-4 col-lg-3 text-center text-sm-start">
         <div class="main-logo">
-          <a href="index.html">
-            <img src="{% static 'images/logo.png' %}" alt="logo" class="img-fluid">
-          </a>
+          <a href="{% url 'home' %}"><img src="{% static 'images/logo.png' %}" alt="logo" class="img-fluid" /></a>
         </div>
       </div>
-      
+
       <div class="col-sm-6 offset-sm-2 offset-md-0 col-lg-5 d-none d-lg-block">
         <div class="search-bar row bg-light p-2 my-2 rounded-4">
           <div class="col-md-4 d-none d-md-block">
-            <select class="form-select border-0 bg-transparent">
-              <option>All Categories</option>
-              <option>Groceries</option>
-              <option>Drinks</option>
-              <option>Chocolates</option>
+            <select class="form-select border-0 bg-transparent" onchange="location = this.value;">
+              <option value="">Categorías</option>
+              {% for categoria in categorias %}
+                <option value="{% url 'productos_por_categoria' categoria.id %}">
+                  {{ categoria.nombre }}
+                </option>
+              {% endfor %}
             </select>
           </div>
-          <div class="col-11 col-md-7">
-            <form id="search-form" class="text-center" action="index.html" method="post">
-              <input type="text" class="form-control border-0 bg-transparent" placeholder="Search for more than 20,000 products" />
+          <div class="col-11 col-md-7 position-relative">
+            <form id="search-form" class="text-center" method="get" autocomplete="off">
+              <input type="text" id="search-input" class="form-control border-0 bg-transparent" placeholder="Buscar producto en Ferremas" />
+              <div id="search-results" class="list-group mt-2 position-absolute w-100"></div>
             </form>
+            
           </div>
           <div class="col-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z" />
+            </svg>
           </div>
         </div>
       </div>
-      
-      <div class="col-sm-8 col-lg-4 d-flex justify-content-end gap-5 align-items-center mt-4 mt-sm-0 justify-content-center justify-content-sm-end">
-        <div class="support-box text-end d-none d-xl-block">
-          <span class="fs-6 text-muted">For Support?</span>
-          <h5 class="mb-0">+980-34984089</h5>
-        </div>
 
+      <div class="col-sm-8 col-lg-4 d-flex justify-content-end gap-5 align-items-center mt-4 mt-sm-0 justify-content-center justify-content-sm-end">
         <ul class="d-flex justify-content-end list-unstyled m-0">
           <li>
-            <a href="#" class="rounded-circle bg-light p-2 mx-1">
-              <svg width="24" height="24" viewBox="0 0 24 24"><use xlink:href="#user"></use></svg>
-            </a>
+            {% if user.is_authenticated %}
+              
+              <div class="d-flex align-items-center">
+                <a href="{% url 'myaccount' %}" class="d-flex align-items-center justify-content-center bg-light rounded-circle mx-1" title="Mi Cuenta" style="width: 40px; height: 40px;">
+                  <svg width="24" height="24" viewBox="0 0 24 24">
+                    <use xlink:href="#user"></use>
+                  </svg>
+                </a>
+                
+                
+                <form method="POST" action="{% url 'logout' %}" class="m-0">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-link p-0 border-0 bg-transparent">
+                    <a href="{% url 'logout' %}" class="rounded-circle bg-light p-2 mx-1" title="Cerrar Sesión">
+                      <svg width="24" height="24" viewBox="0 0 24 24">
+                        <use xlink:href="#logout"></use>
+                      </svg>
+                    </a>
+                  </button>
+                </form>
+              </div>
+              
+            {% else %}
+            <li>Iniciar Sesión 
+            <a href="{% url 'login' %}" class="rounded-circle bg-light p-2 mx-1"><svg width="24" height="24" viewBox="0 0 24 24">
+              <use xlink:href="#user"></use>
+            </svg></a>
+            </li>
+            {% endif %}
           </li>
-          <li>
-            <a href="#" class="rounded-circle bg-light p-2 mx-1">
-              <svg width="24" height="24" viewBox="0 0 24 24"><use xlink:href="#heart"></use></svg>
-            </a>
-          </li>
+          
           <li class="d-lg-none">
-            <a href="#" class="rounded-circle bg-light p-2 mx-1" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">
-              <svg width="24" height="24" viewBox="0 0 24 24"><use xlink:href="#cart"></use></svg>
+            <a href="{% url 'ver_carrito' %}" class="rounded-circle bg-light p-2 mx-1" >
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <use xlink:href="#cart"></use>
+              </svg>
             </a>
           </li>
           <li class="d-lg-none">
             <a href="#" class="rounded-circle bg-light p-2 mx-1" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSearch" aria-controls="offcanvasSearch">
-              <svg width="24" height="24" viewBox="0 0 24 24"><use xlink:href="#search"></use></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <use xlink:href="#search"></use>
+              </svg>
             </a>
           </li>
         </ul>
 
-        <div class="cart text-end d-none d-lg-block dropdown">
-          <button class="border-0 bg-transparent d-flex flex-column gap-2 lh-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">
-            <span class="fs-6 text-muted dropdown-toggle">Your Cart</span>
-            <span class="cart-total fs-5 fw-bold">$1290.00</span>
-          </button>
-        </div>
+        <div class="text-end d-none d-lg-block">
+          <div class="d-flex align-items-center justify-content-end mb-1">
+              <a href="{% url 'ver_carrito' %}" class="rounded-circle bg-light p-2 d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="Carrito">
+                  <svg width="24" height="24" viewBox="0 0 24 24">
+                      <use xlink:href="#cart"></use>
+                  </svg>
+              </a>
+              <span class="ms-2">Carrito</span>
+          </div>
+          <div>
+              <h7>{{ total|formatear_pesos }}</h7>
+          </div>
       </div>
-
+        
+      </div>
     </div>
   </div>
-  <div class="container-fluid">
+  
+  
+   <div class="container-fluid">
     <div class="row py-3">
-      <div class="d-flex  justify-content-center justify-content-sm-between align-items-center">
+      <div class="d-flex justify-content-center justify-content-sm-between align-items-center">
         <nav class="main-menu d-flex navbar navbar-expand-lg">
-
-          <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
-            aria-controls="offcanvasNavbar">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-
+          <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar"><span class="navbar-toggler-icon"></span></button>
           <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-
             <div class="offcanvas-header justify-content-center">
               <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
-
             <div class="offcanvas-body">
-          
-              <select class="filter-categories border-0 mb-0 me-5">
-                <option>Shop by Departments</option>
-                <option>Groceries</option>
-                <option>Drinks</option>
-                <option>Chocolates</option>
-              </select>
-          
+              
               <ul class="navbar-nav justify-content-end menu-list list-unstyled d-flex gap-md-3 mb-0">
+                <li>
+                  <a href="#women" class="nav-link"><span>Hola, {{ user.email }}</a></span>
+                </li>  
                 <li class="nav-item active">
-                  <a href="#women" class="nav-link">Women</a>
                 </li>
                 <li class="nav-item dropdown">
-                  <a href="#men" class="nav-link">Men</a>
                 </li>
                 <li class="nav-item">
                   <a href="#kids" class="nav-link">Kids</a>
@@ -113,18 +134,42 @@
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle" role="button" id="pages" data-bs-toggle="dropdown" aria-expanded="false">Pages</a>
                   <ul class="dropdown-menu" aria-labelledby="pages">
-                    <li><a href="index.html" class="dropdown-item">About Us </a></li>
-                    <li><a href="index.html" class="dropdown-item">Shop </a></li>
-                    <li><a href="index.html" class="dropdown-item">Single Product </a></li>
-                    <li><a href="index.html" class="dropdown-item">Cart </a></li>
-                    <li><a href="index.html" class="dropdown-item">Checkout </a></li>
-                    <li><a href="index.html" class="dropdown-item">Blog </a></li>
-                    <li><a href="index.html" class="dropdown-item">Single Post </a></li>
-                    <li><a href="index.html" class="dropdown-item">Styles </a></li>
-                    <li><a href="index.html" class="dropdown-item">Contact </a></li>
-                    <li><a href="index.html" class="dropdown-item">Thank You </a></li>
-                    <li><a href="index.html" class="dropdown-item">My Account </a></li>
-                    <li><a href="index.html" class="dropdown-item">404 Error </a></li>
+                    <li>
+                      <a href="index.html" class="dropdown-item">About Us</a>
+                    </li>
+                    <li>
+                      <a href="index.html" class="dropdown-item">Shop</a>
+                    </li>
+                    <li>
+                      <a href="index.html" class="dropdown-item">Single Product</a>
+                    </li>
+                    <li>
+                      <a href="index.html" class="dropdown-item">Cart</a>
+                    </li>
+                    <li>
+                      <a href="index.html" class="dropdown-item">Checkout</a>
+                    </li>
+                    <li>
+                      <a href="index.html" class="dropdown-item">Blog</a>
+                    </li>
+                    <li>
+                      <a href="index.html" class="dropdown-item">Single Post</a>
+                    </li>
+                    <li>
+                      <a href="index.html" class="dropdown-item">Styles</a>
+                    </li>
+                    <li>
+                      <a href="index.html" class="dropdown-item">Contact</a>
+                    </li>
+                    <li>
+                      <a href="index.html" class="dropdown-item">Thank You</a>
+                    </li>
+                    <li>
+                      <a href="index.html" class="dropdown-item">My Account</a>
+                    </li>
+                    <li>
+                      <a href="index.html" class="dropdown-item">404 Error</a>
+                    </li>
                   </ul>
                 </li>
                 <li class="nav-item">
@@ -137,11 +182,40 @@
                   <a href="#blog" class="nav-link">Blog</a>
                 </li>
               </ul>
-            
             </div>
-
           </div>
+        </nav>
       </div>
     </div>
   </div>
 </header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('search-input');
+    const results = document.getElementById('search-results');
+  
+    input.addEventListener('input', async () => {
+      const query = input.value.trim();
+      if (query.length < 2) {
+        results.innerHTML = '';
+        return;
+      }
+  
+      try {
+        const response = await fetch(`/buscar-producto/?q=${encodeURIComponent(query)}`);
+        const productos = await response.json();
+  
+        results.innerHTML = productos.length
+          ? productos.map(p => `
+              <a href="/producto/${p.id}/" class="list-group-item list-group-item-action">
+                ${p.nombre}
+              </a>`).join('')
+          : `<div class="list-group-item">No se encontraron productos</div>`;
+      } catch (err) {
+        console.error('Error en la búsqueda:', err);
+      }
+    });
+  });
+  </script>
+  
