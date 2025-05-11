@@ -1,7 +1,8 @@
+from django.utils import timezone
 from django import forms
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
-from .models import Categoria, Producto, Region, Comuna, Direccion, Telefono, UnidadMedida, Carrito, ItemCarrito, Pedido, DetallePedido, MetodoPago, Pago, Perfil
+from .models import Categoria, Producto, Region, Comuna, Direccion, Telefono, UnidadMedida, Carrito, ItemCarrito, Pedido, DetallePedido, EstadoPedido, MetodoPago, Pago, Perfil
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib.auth.models import User
@@ -10,13 +11,31 @@ from django.contrib.auth.decorators import login_required
 import requests
 from django.conf import settings
 from .utils import clp_a_usd
+from .decorators import grupo_requerido
+
+
+@login_required
+def redirect_post_login(request):
+    user = request.user
+    if user.groups.filter(name='Bodeguero').exists():
+        return redirect('dashboard_bodeguero') 
+    #elif user.groups.filter(name='Vendedor').exists():
+        return redirect('panel_vendedor')
+    #elif user.groups.filter(name='Administrador').exists():
+        return redirect('admin:index')  # O tu propio dashboard admin
+    elif user.groups.filter(name='Cliente').exists():
+        return redirect('home')  # O la página de productos
+    else:
+        return redirect('home')  # Fallback por si no tiene grupo
+
+#lógica de registro e inicio de sesión
 
 def login_view(request):
     if request.method == 'POST':
         form = EmailLoginForm(request.POST)
         if form.is_valid():
             login(request, form.user)
-            return redirect('home')
+            return redirect('redirect_post_login')
     else:
         form = EmailLoginForm()
     return render(request, 'registro/login.html', {'form': form})
@@ -49,15 +68,16 @@ def myaccount(request):
     usuario = request.user
     telefono = Telefono.objects.filter(usuario=usuario).first()
     direccion = Direccion.objects.filter(usuario=usuario).first()
-    # pedidos = Pedido.objects.filter(usuario=usuario).order_by('-fecha')
+    pedidos = Pedido.objects.filter(cliente=usuario).order_by('-fecha')
 
     return render(request, 'registro/myaccount.html', {
         'usuario': usuario,
         'telefono': telefono,
         'direccion': direccion,
-       # 'pedidos': pedidos,
+        'pedidos': pedidos,
     })
 
+#lógica y CRUD del carrito 
 
 def agregar_al_carrito(request, producto_id):
     producto = get_object_or_404(Producto, pk=producto_id)
@@ -162,6 +182,7 @@ def vaciar_carrito(request):
 
     return redirect('ver_carrito')
 
+#lógica de productos
 
 def detalle_producto(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
@@ -235,31 +256,7 @@ def buscar_producto(request):
     resultados = Producto.objects.filter(nombre__icontains=q).values('id', 'nombre')[:10]
     return JsonResponse(list(resultados), safe=False)
 
-
-def obtener_token_paypal():
-    url = f"{settings.PAYPAL_API_BASE}/v1/oauth2/token"
-    headers = {
-        "Accept": "application/json",
-        "Accept-Language": "es_CL",
-    }
-    data = {
-        "grant_type": "client_credentials"
-    }
-
-    try:
-        response = requests.post(url, headers=headers, data=data,
-                                 auth=(settings.PAYPAL_CLIENT_ID, settings.PAYPAL_CLIENT_SECRET))
-
-        if response.status_code == 200:
-            return response.json().get("access_token")
-        else:
-            print(f"Error al obtener token de PayPal: {response.status_code} - {response.text}")
-            return None
-    except requests.exceptions.RequestException as e:
-        print(f"Excepción al hacer la solicitud a PayPal: {e}")
-        return None
-
-
+#comunas
 
 def cargar_comunas(request):
     region_id = request.GET.get('region')
@@ -267,6 +264,8 @@ def cargar_comunas(request):
     comunas = Comuna.objects.filter(region_id=region_id).values('id', 'nombre')
     print("Comunas encontradas:", list(comunas))
     return JsonResponse(list(comunas), safe=False)
+
+#lógica perfil de usuario
 
 @login_required
 def editar_perfil(request):
@@ -341,6 +340,8 @@ def procesar_formulario_usuario(request, redireccion, titulo, boton):
         'titulo': titulo,
         'texto_boton': boton,
     })
+    
+#lógica de pedidos    
 
 @login_required
 def confirmar_pedido(request):
@@ -358,13 +359,41 @@ def confirmar_pedido(request):
         'total': total,
     })
     
+ # elegir método de pago  
+    
 @login_required
 def elegir_metodo_pago(request):
     if request.method == 'POST':
-        # Si quisieras más métodos, aquí los manejarías
+        # aca manejar otros metodos de pago
         return redirect('procesar_pago_paypal')
     
     return render(request, 'pedido/elegir_metodo_pago.html')
+
+# integración con API de PayPal
+
+def obtener_token_paypal():
+    url = f"{settings.PAYPAL_API_BASE}/v1/oauth2/token"
+    headers = {
+        "Accept": "application/json",
+        "Accept-Language": "es_CL",
+    }
+    data = {
+        "grant_type": "client_credentials"
+    }
+
+    try:
+        response = requests.post(url, headers=headers, data=data,
+                                 auth=(settings.PAYPAL_CLIENT_ID, settings.PAYPAL_CLIENT_SECRET))
+
+        if response.status_code == 200:
+            return response.json().get("access_token")
+        else:
+            print(f"Error al obtener token de PayPal: {response.status_code} - {response.text}")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Excepción al hacer la solicitud a PayPal: {e}")
+        return None
+
 
 
 def crear_pago(access_token, total_amount, currency='USD',
@@ -484,8 +513,46 @@ def confirmar_pago(request):
     
     if response.status_code == 201:
         datos_pago = response.json()
-        # Aquí podrías crear el objeto Pedido, guardar los ítems, marcar como pagado, etc.
+        # traer datos de usuario
+        usuario = request.user
+        carrito = Carrito.objects.filter(usuario=usuario).first()
+        items = ItemCarrito.objects.filter(carrito=carrito)
 
+        if not carrito or not items.exists():
+            return render(request, 'pedido/error_pago.html', {'error': 'No hay productos en el carrito.'})
+        
+        # crear el pedido
+        estado_pendiente, _ = EstadoPedido.objects.get_or_create(nombre="Pendiente")
+        total = sum(item.producto.precio_venta * item.cantidad for item in items)
+        pedido = Pedido.objects.create(
+            cliente=usuario,
+            estado=estado_pendiente,
+            total=total
+        )
+        
+        #detalle del pedido
+        for item in items:
+            DetallePedido.objects.create(
+                pedido=pedido,
+                producto=item.producto,
+                cantidad=item.cantidad,
+                precio_unitario=item.producto.precio_venta
+            )
+        
+        # guardar metodo de pago
+        metodo_paypal, _ = MetodoPago.objects.get_or_create(nombre="PayPal", defaults={"descripcion": "Pago a través de PayPal"})
+
+        # guardar pago
+        Pago.objects.create(
+            pedido=pedido,
+            metodo_pago=metodo_paypal,
+            estado="Completado",
+            fecha_pago=timezone.now()
+        )
+        # vaciar carrito
+        items.delete()
+        carrito.delete()
+        
         return render(request, 'pedido/pago_exitoso.html', {
             'monto': datos_pago['purchase_units'][0]['payments']['captures'][0]['amount']['value'],
             'moneda': datos_pago['purchase_units'][0]['payments']['captures'][0]['amount']['currency_code'],
@@ -494,3 +561,32 @@ def confirmar_pago(request):
         })
     else:
         return render(request, 'pedido/error_pago.html', {'error': response.text})
+
+# lógica de vista de bodeguero
+
+@grupo_requerido('Bodeguero')
+def dashboard_bodeguero(request):
+    return render(request, 'pedido/bodeguero/dashboard.html')
+
+@grupo_requerido('Bodeguero')
+def pedidos_pendientes(request):
+    pedidos = Pedido.objects.filter(estado__nombre__in=['Pendiente', 'En preparación'])
+    return render(request, 'pedido/bodeguero/pedidos_pendientes.html', {'pedidos': pedidos})
+
+@grupo_requerido('Bodeguero')
+def pedido_detalle(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    if request.method == 'POST':
+        accion = request.POST.get('accion')
+        if accion == 'preparar':
+            pedido.estado = 2 # en preparacion       
+        elif accion == 'listo':
+            pedido.estado = 3 #'Listo para despacho'
+        pedido.save()
+        return redirect('pedidos_pendientes')
+    return render(request, 'pedido/bodeguero/detalle_pedido.html', {'pedido': pedido})
+
+@grupo_requerido('Bodeguero')
+def pedidos_preparados(request):
+    pedidos = Pedido.objects.filter(estado=3)
+    return render(request, 'pedido/bodeguero/pedidos_preparados.html', {'pedidos': pedidos})

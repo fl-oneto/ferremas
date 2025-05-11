@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load filtros_personalizados %}
+
+{% block content %}
+<h2>Panel del Bodeguero</h2>
+<ul>
+  <li><a href="{% url 'pedidos_pendientes' %}">Pedidos pendientes</a></li>
+  <li><a href="{% url 'pedidos_preparados' %}">Pedidos listos para despacho</a></li>
+</ul>
+
+{% endblock %}

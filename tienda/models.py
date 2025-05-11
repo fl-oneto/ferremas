@@ -93,17 +93,25 @@ class ItemCarrito(models.Model):
 
     def __str__(self):
         return f"{self.cantidad} x {self.producto.nombre}"
+    
+#estado de pedido 
+class EstadoPedido(models.Model):
+    nombre = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.nombre
+
 
 # pedido
 class Pedido(models.Model):
     cliente = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha = models.DateField(auto_now_add=True)
-    estado = models.CharField(max_length=50)
+    estado = models.ForeignKey(EstadoPedido, on_delete=models.SET_NULL, null=True)
     total = models.FloatField()
 
     def __str__(self):
         return f"Pedido #{self.id} de {self.cliente.nombre}"
-
+    
 # DetallePedido
 class DetallePedido(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
@@ -127,7 +135,7 @@ class Pago(models.Model):
     pedido = models.OneToOneField(Pedido, on_delete=models.CASCADE)
     metodo_pago = models.ForeignKey(MetodoPago, on_delete=models.CASCADE)
     estado = models.CharField(max_length=50)
-    fecha_pago = models.DateField()
+    fecha_pago = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Pago de pedido #{self.pedido.id} - {self.metodo_pago.nombre}"
