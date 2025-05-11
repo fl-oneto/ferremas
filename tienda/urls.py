@@ -8,6 +8,7 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
     path('signup/', views.signup, name='signup'),
     path('myaccount/', views.myaccount, name='myaccount'),
+    path('editar_perfil/', views.editar_perfil, name='editar_perfil'),
     path('agregar/<int:producto_id>/', views.agregar_al_carrito, name='agregar_al_carrito'),
     path('eliminar/<int:producto_id>/', views.eliminar_del_carrito, name='eliminar_del_carrito'),
     path('carrito/', views.ver_carrito, name='ver_carrito'),
@@ -16,6 +17,12 @@ urlpatterns = [
     path('categoria/<int:categoria_id>/', views.productos_por_categoria, name='productos_por_categoria'),
     path('pagar/', views.pagar, name='pagar'),
     path('buscar-producto/', views.buscar_producto, name='buscar_producto'),
+    path('ajax/cargar-comunas/', views.cargar_comunas, name='cargar_comunas'),
+    path('completar_datos/', views.completar_datos_usuario, name='completar_datos_usuario'),
+    path('confirmar_pedido/', views.confirmar_pedido, name='confirmar_pedido'),
+    path('elegir_metodo_pago/', views.elegir_metodo_pago, name='elegir_metodo_pago'),
+    path('procesar_pago_paypal/', views.procesar_pago_paypal, name='procesar_pago_paypal'),
+    path('confirmar_pago/', views.confirmar_pago, name='confirmar_pago'),
 
 
 
