@@ -1,4 +1,6 @@
 from django.contrib.auth.forms import UserCreationForm
+from .models import Comuna, Region
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django import forms
@@ -58,3 +60,36 @@ class EmailLoginForm(forms.Form):
 
         self.user = user
         return self.cleaned_data
+    
+User = get_user_model()
+
+class DatosUsuarioForm(forms.Form):
+    nombre = forms.CharField(max_length=150, required=True, label='Nombre')
+    primer_apellido = forms.CharField(max_length=150, required=True, label='Primer apellido')
+    segundo_apellido = forms.CharField(max_length=150, required=False, label='Segundo apellido')
+    telefono = forms.CharField(max_length=20, required=True, label='Teléfono')
+    calle = forms.CharField(max_length=255, required=True, label='Calle')
+    numero = forms.CharField(max_length=20, required=True, label='Número')
+    region = forms.ModelChoiceField(
+        queryset=Region.objects.all(),
+        required=True,
+        label='Región'
+    )
+    comuna = forms.ModelChoiceField(
+        queryset=Comuna.objects.none(),
+        required=True,
+        label='Comuna'
+    )
+
+    def __init__(self, *args, **kwargs):
+        region_id = kwargs.pop('region_id', None)
+        super().__init__(*args, **kwargs)
+
+        if region_id:
+            try:
+                region_id = int(region_id)
+                self.fields['comuna'].queryset = Comuna.objects.filter(region_id=region_id)
+            except (ValueError, TypeError):
+                self.fields['comuna'].queryset = Comuna.objects.none()
+        else:
+            self.fields['comuna'].queryset = Comuna.objects.none()

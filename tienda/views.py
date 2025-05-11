@@ -1,12 +1,15 @@
 from django import forms
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
-from .models import Categoria, Producto, Region, Comuna, Direccion, Telefono, UnidadMedida, Carrito, ItemCarrito, Pedido, DetallePedido, MetodoPago, Pago
+from .models import Categoria, Producto, Region, Comuna, Direccion, Telefono, UnidadMedida, Carrito, ItemCarrito, Pedido, DetallePedido, MetodoPago, Pago, Perfil
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib.auth.models import User
-from .forms import CustomUserCreationForm, EmailLoginForm
+from .forms import CustomUserCreationForm, DatosUsuarioForm, EmailLoginForm
 from django.contrib.auth.decorators import login_required
+import requests
+from django.conf import settings
+from .utils import clp_a_usd
 
 def login_view(request):
     if request.method == 'POST':
@@ -43,7 +46,18 @@ def home(request):
 
 @login_required
 def myaccount(request):
-    return render(request, 'myaccount.html')
+    usuario = request.user
+    telefono = Telefono.objects.filter(usuario=usuario).first()
+    direccion = Direccion.objects.filter(usuario=usuario).first()
+    # pedidos = Pedido.objects.filter(usuario=usuario).order_by('-fecha')
+
+    return render(request, 'registro/myaccount.html', {
+        'usuario': usuario,
+        'telefono': telefono,
+        'direccion': direccion,
+       # 'pedidos': pedidos,
+    })
+
 
 def agregar_al_carrito(request, producto_id):
     producto = get_object_or_404(Producto, pk=producto_id)
@@ -215,7 +229,268 @@ def pagar(request):
 
     return render(request, 'pagar.html', context)
 
+
 def buscar_producto(request):
     q = request.GET.get('q', '')
     resultados = Producto.objects.filter(nombre__icontains=q).values('id', 'nombre')[:10]
     return JsonResponse(list(resultados), safe=False)
+
+
+def obtener_token_paypal():
+    url = f"{settings.PAYPAL_API_BASE}/v1/oauth2/token"
+    headers = {
+        "Accept": "application/json",
+        "Accept-Language": "es_CL",
+    }
+    data = {
+        "grant_type": "client_credentials"
+    }
+
+    try:
+        response = requests.post(url, headers=headers, data=data,
+                                 auth=(settings.PAYPAL_CLIENT_ID, settings.PAYPAL_CLIENT_SECRET))
+
+        if response.status_code == 200:
+            return response.json().get("access_token")
+        else:
+            print(f"Error al obtener token de PayPal: {response.status_code} - {response.text}")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Excepción al hacer la solicitud a PayPal: {e}")
+        return None
+
+
+
+def cargar_comunas(request):
+    region_id = request.GET.get('region')
+    print("Region ID recibido:", region_id)
+    comunas = Comuna.objects.filter(region_id=region_id).values('id', 'nombre')
+    print("Comunas encontradas:", list(comunas))
+    return JsonResponse(list(comunas), safe=False)
+
+@login_required
+def editar_perfil(request):
+    return procesar_formulario_usuario(
+        request,
+        redireccion='myaccount',
+        titulo='Editar perfil',
+        boton='Guardar cambios'
+    )
+
+@login_required
+def completar_datos_usuario(request):
+    return procesar_formulario_usuario(
+        request,
+        redireccion='confirmar_pedido',
+        titulo='Confirma tus datos antes de continuar con el pedido',
+        boton='Confirmar y continuar'
+    )
+
+def procesar_formulario_usuario(request, redireccion, titulo, boton):
+    usuario = request.user
+    telefono = Telefono.objects.filter(usuario=usuario).first()
+    direccion = Direccion.objects.filter(usuario=usuario).first()
+    regiones = Region.objects.all()
+
+    region_id = None
+    if request.method == 'POST':
+        region_id = request.POST.get('region')
+        form = DatosUsuarioForm(request.POST, region_id=region_id)
+        if form.is_valid():
+            # Guardar datos del perfil
+            usuario.perfil.nombre = form.cleaned_data['nombre']
+            usuario.perfil.primer_apellido = form.cleaned_data['primer_apellido']
+            usuario.perfil.segundo_apellido = form.cleaned_data.get('segundo_apellido', '')
+            usuario.perfil.save()
+
+            Telefono.objects.update_or_create(
+                usuario=usuario,
+                defaults={'numero': form.cleaned_data['telefono']}
+            )
+
+            Direccion.objects.update_or_create(
+                usuario=usuario,
+                defaults={
+                    'calle': form.cleaned_data['calle'],
+                    'numero': form.cleaned_data['numero'],
+                    'comuna': form.cleaned_data['comuna'],
+                    'codigo_postal': None
+                }
+            )
+
+            return redirect(redireccion)
+    else:
+        initial_data = {
+            'nombre': usuario.perfil.nombre if hasattr(usuario, 'perfil') else '',
+            'primer_apellido': usuario.perfil.primer_apellido if hasattr(usuario, 'perfil') else '',
+            'segundo_apellido': usuario.perfil.segundo_apellido if hasattr(usuario, 'perfil') else '',
+            'telefono': telefono.numero if telefono else '',
+            'calle': direccion.calle if direccion else '',
+            'numero': direccion.numero if direccion else '',
+            'region': direccion.comuna.region if direccion and direccion.comuna else None,
+            'comuna': direccion.comuna if direccion else None,
+        }
+        region_id = direccion.comuna.region.id if direccion and direccion.comuna else None
+        form = DatosUsuarioForm(initial=initial_data, region_id=region_id)
+
+    return render(request, 'registro/editar_perfil.html', {
+        'form': form,
+        'regiones': regiones,
+        'telefono': telefono,
+        'direccion': direccion,
+        'titulo': titulo,
+        'texto_boton': boton,
+    })
+
+@login_required
+def confirmar_pedido(request):
+    usuario = request.user
+    carrito = Carrito.objects.filter(usuario=usuario).first()
+    items = ItemCarrito.objects.filter(carrito=carrito)
+
+    if not carrito or not items.exists():
+        return redirect('carrito')  # Si no hay productos, redirige al carrito
+
+    total = sum(item.producto.precio_venta * item.cantidad for item in items)
+
+    return render(request, 'pedido/confirmar_pedido.html', {
+        'items': items,
+        'total': total,
+    })
+    
+@login_required
+def elegir_metodo_pago(request):
+    if request.method == 'POST':
+        # Si quisieras más métodos, aquí los manejarías
+        return redirect('procesar_pago_paypal')
+    
+    return render(request, 'pedido/elegir_metodo_pago.html')
+
+
+def crear_pago(access_token, total_amount, currency='USD',
+               return_url='http://localhost:8000/confirmar_pago/',
+               cancel_url='http://localhost:8000/cancelar_pago/', direccion=None):
+    url = f"{settings.PAYPAL_API_BASE}/v2/checkout/orders"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    amt = str(int(total_amount)) if currency == 'CLP' else f"{total_amount:.2f}"
+    
+    shipping_block = {}
+    if direccion:
+        shipping_block = {
+            "shipping": {
+                "name": {
+                    "full_name": f"{direccion.usuario.perfil.nombre} {direccion.usuario.perfil.primer_apellido}"
+                },
+                "address": {
+                    "address_line_1": f"{direccion.calle} {direccion.numero}",
+                    "admin_area_2": direccion.comuna.nombre,
+                    "admin_area_1": direccion.comuna.region.nombre,
+                    "postal_code": direccion.codigo_postal or "",
+                    "country_code": "CL"
+                }
+            }
+        }
+    
+    body = {
+        "intent": "CAPTURE",
+        "purchase_units": [{
+            "amount": {
+                "currency_code": currency,
+                "value": amt
+            },
+            **shipping_block
+        }],
+        "application_context": {
+            "return_url": return_url,
+            "cancel_url": cancel_url,
+            "shipping_preference": "SET_PROVIDED_ADDRESS"
+        }
+    }
+
+    response = requests.post(url, headers=headers, json=body)
+    print("Respuesta de PayPal:", response.text)
+    response.raise_for_status()
+    data = response.json()
+
+    # Extraemos correctamente el link con rel == "approve"
+    approval_url = next(
+        (link["href"] for link in data.get("links", []) if link.get("rel") == "approve"),
+        None
+    )
+
+    return data.get("id"), approval_url
+
+
+@login_required
+def procesar_pago_paypal(request):
+    direccion = Direccion.objects.filter(usuario=request.user).first()
+    usuario = request.user
+    carrito = Carrito.objects.filter(usuario=usuario).first()
+    items = ItemCarrito.objects.filter(carrito=carrito)
+
+    if not carrito or not items.exists():
+        return redirect('carrito')
+
+    total = sum(item.producto.precio_venta * item.cantidad for item in items)
+    try:
+        total_usd = clp_a_usd(total, settings.EXCHANGERATE_API_KEY)
+        print(f"Total CLP: {total} => Total USD: {total_usd}")
+    except Exception as e:
+        print("Error en conversión CLP a USD:", e)
+        return HttpResponse("Error al convertir moneda", status=500)
+
+    access_token = obtener_token_paypal()
+    print("TOKEN:", access_token)
+
+    order_id, approval_url = crear_pago(
+        access_token,
+        total_amount=total_usd,
+        currency='USD',  # o la moneda que estés usando en sandbox
+        return_url=request.build_absolute_uri('/confirmar_pago/'),
+        cancel_url=request.build_absolute_uri('/cancelar_pago/'),
+        direccion=direccion
+    )
+
+    if not approval_url:
+        # Si algo falló, muestra un error
+        print("error de approval_url:", approval_url)
+
+        return render(request, 'pedido/error_pago.html', {'error': 'No se pudo iniciar la orden en PayPal.'})
+
+    # Guardar order_id si lo necesitas:
+    request.session['paypal_order_id'] = order_id
+
+    # 🛫 Redirigir al usuario al approval_url de PayPal
+    print("APPROVAL URL:", approval_url)
+    print("TYPE:", type(approval_url))
+
+    return redirect(approval_url)
+
+@login_required
+def confirmar_pago(request):
+    order_id = request.GET.get('token')
+    access_token = obtener_token_paypal()
+    url = f"{settings.PAYPAL_API_BASE}/v2/checkout/orders/{order_id}/capture"
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}"
+    }
+    response = requests.post(url, headers=headers)
+    print("RESPUESTA PAYPAL:", response.status_code, response.text)
+    
+    if response.status_code == 201:
+        datos_pago = response.json()
+        # Aquí podrías crear el objeto Pedido, guardar los ítems, marcar como pagado, etc.
+
+        return render(request, 'pedido/pago_exitoso.html', {
+            'monto': datos_pago['purchase_units'][0]['payments']['captures'][0]['amount']['value'],
+            'moneda': datos_pago['purchase_units'][0]['payments']['captures'][0]['amount']['currency_code'],
+            'email': datos_pago['payer']['email_address'],
+            'nombre': datos_pago['payer']['name']['given_name'] + " " + datos_pago['payer']['name']['surname']
+        })
+    else:
+        return render(request, 'pedido/error_pago.html', {'error': response.text})

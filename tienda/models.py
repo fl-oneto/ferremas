@@ -1,6 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+#perfil
+class Perfil(models.Model):
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE)
+    nombre = models.CharField(max_length=50)
+    primer_apellido = models.CharField(max_length=50)
+    segundo_apellido = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.nombre} {self.primer_apellido} {self.segundo_apellido or ''}".strip()
+
 
 # región
 class Region(models.Model):
@@ -19,7 +29,7 @@ class Comuna(models.Model):
 
 # dirección
 class Direccion(models.Model):
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE)
     calle = models.CharField(max_length=255)
     numero = models.CharField(max_length=20)
     comuna = models.ForeignKey(Comuna, on_delete=models.CASCADE)
@@ -73,7 +83,7 @@ class Carrito(models.Model):
     fecha_creacion = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return f"Carrito de {self.usuario.email}"
+        return f"Carrito de {self.usuario.email}" if self.usuario else f"Carrito de sesión {self.session_key}"
 
 # ItemCarrito
 class ItemCarrito(models.Model):

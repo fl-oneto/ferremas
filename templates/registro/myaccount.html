@@ -10,10 +10,21 @@
       <div class="card mb-4">
         <div class="card-body">
           <h5 class="card-title">Información del Usuario</h5>
-          {% comment %} <p><strong>Nombre:</strong> {{ usuario.get_full_name }}</p> {% endcomment %}
+        
+          <p><strong>Nombre:</strong> {{ usuario.perfil.nombre }} {{usuario.perfil.primer_apellido}} {{usuario.perfil.segundo_apellido}}</p>
           <p><strong>Email:</strong> {{ usuario.email }}</p>
-          {% comment %} <a href="{% url 'editar_perfil' %}" class="btn btn-sm btn-outline-primary">Editar Perfil</a> {% endcomment %}
+        
+          {% if telefono %}
+            <p><strong>Teléfono:</strong> {{ telefono.numero }}</p>
+          {% endif %}
+        
+          {% if direccion %}
+            <p><strong>Dirección:</strong> {{ direccion.calle }} {{ direccion.numero }}, {{ direccion.comuna.nombre }}, {{ direccion.comuna.region.nombre }}</p>
+          {% endif %}
+        
+          <a href="{% url 'editar_perfil' %}" class="btn btn-sm btn-outline-primary">Editar Datos</a>
         </div>
+        
       </div>
 
       <form method="POST" action="{% url 'logout' %}">

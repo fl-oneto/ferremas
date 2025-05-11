@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% load filtros_personalizados %}
+
+{% block content %}
+<h2>¡Pago exitoso!</h2>
+<p>Gracias {{ nombre }}. Hemos recibido tu pago de {{ monto }} {{ moneda }}.</p>
+<p>Te enviaremos una confirmación a {{ email }}.</p>
+
+{% endblock %}

@@ -10,8 +10,7 @@
 
         <form method="post">
           {% csrf_token %}
-          <button type="submit" name="iniciar_sesion">Iniciar sesión</button>
-          <button type="submit" name="seguir_como_invitado">Seguir como invitado</button>
+          <button class="btn btn-primary" type="submit" name="iniciar_sesion">Ir a Pagar</button>
         </form>
       {% else %}
         <p>No tienes productos en tu carrito.</p>

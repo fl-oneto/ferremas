@@ -76,10 +76,7 @@
             <h5 class="precios text-center">{{ total|formatear_pesos }}</h5>
           </div>
           <div class="p-3">
-            <form action="{% url 'pagar' %}" method="post">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-primary w-100">Pagar</button>
-            </form>
+            <a href="{% url 'completar_datos_usuario' %}" class="btn btn-primary w-100">Pagar</a>
         </div>
         
         </div>
