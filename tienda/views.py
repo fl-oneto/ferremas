@@ -12,6 +12,8 @@ import requests
 from django.conf import settings
 from .utils import clp_a_usd
 from .decorators import grupo_requerido
+from django.utils.http import url_has_allowed_host_and_scheme
+
 
 
 @login_required
@@ -19,8 +21,8 @@ def redirect_post_login(request):
     user = request.user
     if user.groups.filter(name='Bodeguero').exists():
         return redirect('dashboard_bodeguero') 
-    #elif user.groups.filter(name='Vendedor').exists():
-        return redirect('panel_vendedor')
+    elif user.groups.filter(name='Vendedor').exists():
+        return redirect('dashboard_vendedor')
     #elif user.groups.filter(name='Administrador').exists():
         return redirect('admin:index')  # O tu propio dashboard admin
     elif user.groups.filter(name='Cliente').exists():
@@ -35,6 +37,9 @@ def login_view(request):
         form = EmailLoginForm(request.POST)
         if form.is_valid():
             login(request, form.user)
+            next_url = request.POST.get('next')
+            if next_url and url_has_allowed_host_and_scheme(next_url, request.get_host()):
+                return redirect(next_url)
             return redirect('redirect_post_login')
     else:
         form = EmailLoginForm()
@@ -579,14 +584,62 @@ def pedido_detalle(request, pedido_id):
     if request.method == 'POST':
         accion = request.POST.get('accion')
         if accion == 'preparar':
-            pedido.estado = 2 # en preparacion       
+            estado_preparando = EstadoPedido.objects.get(nombre="En preparación")
+            pedido.estado = estado_preparando
         elif accion == 'listo':
-            pedido.estado = 3 #'Listo para despacho'
+            estado_listo = EstadoPedido.objects.get(nombre="Listo para despacho")
+            pedido.estado = estado_listo
         pedido.save()
         return redirect('pedidos_pendientes')
     return render(request, 'pedido/bodeguero/detalle_pedido.html', {'pedido': pedido})
 
 @grupo_requerido('Bodeguero')
 def pedidos_preparados(request):
-    pedidos = Pedido.objects.filter(estado=3)
+    estado_preparado = EstadoPedido.objects.get(nombre="Listo para despacho")
+    pedidos = Pedido.objects.filter(estado=estado_preparado)
     return render(request, 'pedido/bodeguero/pedidos_preparados.html', {'pedidos': pedidos})
+
+#vista del vendedor
+@grupo_requerido('Vendedor')
+def productos_disponibles(request):
+    productos = Producto.objects.filter(stock__gt=0)
+    return render(request, 'pedido/vendedor/productos_disponibles.html', {'productos': productos})
+
+@grupo_requerido('Vendedor')
+def pedidos_por_aprobar(request):
+    estado_pendiente = EstadoPedido.objects.get(nombre="Pendiente")
+    pedidos = Pedido.objects.filter(estado=estado_pendiente)
+    return render(request, 'pedido/vendedor/pedidos_por_aprobar.html', {'pedidos': pedidos})
+
+@grupo_requerido('Vendedor')
+def aprobar_rechazar_pedido(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    if request.method == 'POST':
+        accion = request.POST.get('accion')
+        if accion == 'aprobar':
+            estado_preparando = EstadoPedido.objects.get(nombre="En preparación")
+            pedido.estado = estado_preparando
+        elif accion == 'rechazar':
+            estado_cancelado = EstadoPedido.objects.get(nombre="Cancelado")
+            pedido.estado = estado_cancelado
+        pedido.save()
+        return redirect('pedidos_por_aprobar')
+    return render(request, 'pedido/vendedor/detalle_pedido.html', {'pedido': pedido})
+
+@grupo_requerido('Vendedor')
+def pedidos_despacho(request):
+    estado_preparado = EstadoPedido.objects.get(nombre="Listo para despacho")
+    pedidos = Pedido.objects.filter(estado=estado_preparado) # 'listo para despacho'
+    return render(request, 'pedido/vendedor/pedidos_despacho.html', {'pedidos': pedidos})
+
+@grupo_requerido('Vendedor')
+def dashboard_vendedor(request):
+    productos = Producto.objects.all()
+    pedidos_pendientes = Pedido.objects.filter(estado__nombre="Por aprobar")
+    pedidos_despacho = Pedido.objects.filter(estado__nombre="Listo para despacho")
+
+    return render(request, 'pedido/vendedor/dashboard.html', {
+        'productos': productos,
+        'pedidos_pendientes': pedidos_pendientes,
+        'pedidos_despacho': pedidos_despacho,
+    })

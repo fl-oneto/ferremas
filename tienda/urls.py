@@ -28,6 +28,11 @@ urlpatterns = [
     path('bodeguero/pedido/<int:pedido_id>/', views.pedido_detalle, name='detalle_pedido'),
     path('bodeguero/preparados/', views.pedidos_preparados, name='pedidos_preparados'),
     path('redirect/', views.redirect_post_login, name='redirect_post_login'),
+    path('vendedor/productos/', views.productos_disponibles, name='productos_disponibles'),
+    path('vendedor/pedidos/', views.pedidos_por_aprobar, name='pedidos_por_aprobar'),
+    path('vendedor/pedido/<int:pedido_id>/', views.aprobar_rechazar_pedido, name='aprobar_rechazar_pedido'),
+    path('vendedor/despacho/', views.pedidos_despacho, name='pedidos_despacho'),
+    path('vendedor/', views.dashboard_vendedor, name='dashboard_vendedor'),
 
 ]
 
