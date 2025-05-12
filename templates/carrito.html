@@ -1,6 +1,15 @@
 {% extends 'base.html' %}
 {% load filtros_personalizados %}
 
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li class="{{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+
 {% block content %}
   <section class="carrito">
     <div class="container">

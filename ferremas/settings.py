@@ -65,6 +65,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'tienda.context_processors.categorias_disponibles',
                 'tienda.context_processors.regiones_comunas',
+                'tienda.context_processors.url_logo',
+
             ],
         },
     },
@@ -132,7 +134,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/redirect/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
 

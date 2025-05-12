@@ -6,7 +6,7 @@
     <div class="row py-3 border-bottom">
       <div class="col-sm-4 col-lg-3 text-center text-sm-start">
         <div class="main-logo">
-          <a href="{% url 'home' %}"><img src="{% static 'images/logo1.png' %}" alt="logo" class="img-fluid" /></a>
+          <a href="{{ url_logo }}"><img src="{% static 'images/logo1.png' %}" alt="logo" class="img-fluid" /></a>
         </div>
       </div>
 
@@ -52,14 +52,15 @@
                 
                 <form method="POST" action="{% url 'logout' %}" class="m-0">
                   {% csrf_token %}
-                  <button type="submit" class="btn btn-link p-0 border-0 bg-transparent">
-                    <a href="{% url 'logout' %}" class="rounded-circle bg-light p-2 mx-1" title="Cerrar Sesión">
+                  <button type="submit" 
+                          class="rounded-circle bg-light p-2 mx-1 btn btn-link border-0" 
+                          title="Cerrar Sesión">
                       <svg width="24" height="24" viewBox="0 0 24 24">
-                        <use xlink:href="#logout"></use>
+                          <use xlink:href="#logout"></use>
                       </svg>
-                    </a>
                   </button>
-                </form>
+              </form>
+              
               </div>
               
             {% else %}
@@ -119,7 +120,13 @@
               
               <ul class="navbar-nav justify-content-end menu-list list-unstyled d-flex gap-md-3 mb-0">
                 <li>
-                  <a href="#women" class="nav-link"><span>Hola, {{ user.email }}</a></span>
+                  <a href="#women" class="nav-link"><span>{% if user.is_authenticated %}
+                    Hola, {{ user.perfil.nombre|default:user.email }}
+                  {% else %}
+                    Hola, visitante
+                  {% endif %}
+                  
+                  </a></span>
                 </li>  
                 <li class="nav-item active">
                 </li>

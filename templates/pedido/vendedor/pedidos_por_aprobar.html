@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Pedidos por aprobar</h2>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Cliente</th>
+      <th>Fecha</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for pedido in pedidos %}
+    <tr>
+      <td>{{ pedido.id }}</td>
+      <td>{{ pedido.cliente.nombre }}</td>
+      <td>{{ pedido.fecha }}</td>
+      <td>
+        <a href="{% url 'aprobar_rechazar_pedido' pedido.id %}">Ver</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="4">No hay pedidos pendientes.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

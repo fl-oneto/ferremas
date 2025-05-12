@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Detalle del Pedido #{{ pedido.id }}</h2>
+
+<ul>
+  {% for item in pedido.detallepedido_set.all %}
+  <li>{{ item.producto.nombre }} - Cantidad: {{ item.cantidad }}</li>
+  {% endfor %}
+</ul>
+
+<form method="post">
+  {% csrf_token %}
+  <button name="accion" value="aprobar">Aprobar</button>
+  <button name="accion" value="rechazar">Rechazar</button>
+</form>
+<a href="{% url 'pedidos_por_aprobar' %}">Volver</a>
+{% endblock %}

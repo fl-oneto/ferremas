@@ -23,7 +23,17 @@ urlpatterns = [
     path('elegir_metodo_pago/', views.elegir_metodo_pago, name='elegir_metodo_pago'),
     path('procesar_pago_paypal/', views.procesar_pago_paypal, name='procesar_pago_paypal'),
     path('confirmar_pago/', views.confirmar_pago, name='confirmar_pago'),
-
-
+    path('bodeguero/', views.dashboard_bodeguero, name='dashboard_bodeguero'),
+    path('bodeguero/pedidos/', views.pedidos_pendientes, name='pedidos_pendientes'),
+    path('bodeguero/pedido/<int:pedido_id>/', views.pedido_detalle, name='detalle_pedido'),
+    path('bodeguero/preparados/', views.pedidos_preparados, name='pedidos_preparados'),
+    path('redirect/', views.redirect_post_login, name='redirect_post_login'),
+    path('vendedor/productos/', views.productos_disponibles, name='productos_disponibles'),
+    path('vendedor/pedidos/', views.pedidos_por_aprobar, name='pedidos_por_aprobar'),
+    path('vendedor/pedido/<int:pedido_id>/', views.aprobar_rechazar_pedido, name='aprobar_rechazar_pedido'),
+    path('vendedor/despacho/', views.pedidos_despacho, name='pedidos_despacho'),
+    path('pedido/<int:pedido_id>/despachar/', views.despachar_pedido, name='despachar_pedido'),
+    path('vendedor/', views.dashboard_vendedor, name='dashboard_vendedor'),
 
 ]
+
