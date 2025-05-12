@@ -1,11 +1,37 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load filtros_personalizados %}
 
-{% block content %}
-<h2>Panel del Bodeguero</h2>
-<ul>
-  <li><a href="{% url 'pedidos_pendientes' %}">Pedidos en preparación</a></li>
-  <li><a href="{% url 'pedidos_preparados' %}">Pedidos listos para despacho</a></li>
-</ul>
+{% block title %}
+    Dashboard Bodeguero
+{% endblock %}
 
+{% block content %}
+<div class="container mt-5">
+    <h2>Bienvenido, {{ request.user.nombre|default:request.user.email }} 👷</h2>
+
+    <hr>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Pedidos en preparación</h5>
+                    <p class="card-text">Revisa y acepta los pedidos pendientes de preparación.</p>
+                    <a href="{% url 'pedidos_pendientes' %}" class="btn btn-warning">Ver pedidos</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Pedidos listos para despacho</h5>
+                    <p class="card-text">Entrega los pedidos listos al vendedor correspondiente.</p>
+                    <a href="{% url 'pedidos_preparados' %}" class="btn btn-success">Gestionar entregas</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
