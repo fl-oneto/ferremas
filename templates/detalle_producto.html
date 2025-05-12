@@ -13,14 +13,16 @@
             <p class="text-muted">{{ producto.descripcion }}</p>
             <h4 class="text-success">${{ producto.precio_venta|formatear_pesos }}</h4>
 
-            <form method="post" action="{% url 'agregar_al_carrito' producto.id %}">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="cantidad">Cantidad:</label>
-                    <input type="number" name="cantidad" id="cantidad" class="form-control w-25" value="1" min="1">
-                </div>
-                <button type="submit" class="btn btn-primary mt-2">Agregar al carrito</button>
-            </form>
+            {% if producto.stock > 0 %}
+                <p>Stock disponible: {{ producto.stock }}</p>
+                <form method="post" action="{% url 'agregar_al_carrito' producto.id %}">
+                    {% csrf_token %}
+                    <input type="number" name="cantidad" value="1" min="1" max="{{ producto.stock }}" required>
+                    <button type="submit">Agregar al carrito</button>
+                </form>
+            {% else %}
+                <p class="agotado">Producto agotado</p>
+            {% endif %}
         </div>
     </div>
 </div>

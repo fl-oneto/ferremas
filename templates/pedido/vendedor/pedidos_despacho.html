@@ -2,33 +2,33 @@
 {% block content %}
 <h2>Pedidos listos para despacho</h2>
 <table>
-  <thead>
     <tr>
-      <th>ID</th>
-      <th>Cliente</th>
-      <th>Fecha</th>
+      <th>Producto</th>
+      <th>Cantidad</th>
+      <th>Estado</th>
       <th>Acción</th>
     </tr>
-  </thead>
-  <tbody>
     {% for pedido in pedidos %}
     <tr>
       <td>{{ pedido.id }}</td>
-      <td>{{ pedido.cliente.nombre }}</td>
-      <td>{{ pedido.fecha }}</td>
       <td>
-        <!-- Puedes agregar un botón para marcar como enviado -->
-        <form method="post" action="{% url 'marcar_despachado' pedido.id %}">
+        <ul>
+          {% for detalle in pedido.detallepedido_set.all %}
+          <li>{{ detalle.producto.nombre }} - {{ detalle.cantidad }}</li>
+          {% endfor %}
+        </ul>
+      </td>
+      <td>{{ pedido.estado.nombre }}</td>
+      <td>
+        {% if pedido.estado.nombre == "Listo para despacho" %}
+        <form action="{% url 'despachar_pedido' pedido.id %}" method="post">
           {% csrf_token %}
-          <button type="submit">Marcar como Despachado</button>
+          <button type="submit">Despachar</button>
         </form>
+        {% endif %}
       </td>
     </tr>
-    {% empty %}
-    <tr>
-      <td colspan="4">No hay pedidos listos para despacho.</td>
-    </tr>
     {% endfor %}
-  </tbody>
-</table>
+  </table>
+  
 {% endblock %}

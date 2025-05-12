@@ -1,11 +1,9 @@
+from django.urls import reverse
 from django.utils import timezone
-from django import forms
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from .models import Categoria, Producto, Region, Comuna, Direccion, Telefono, UnidadMedida, Carrito, ItemCarrito, Pedido, DetallePedido, EstadoPedido, MetodoPago, Pago, Perfil
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
-from django.contrib.auth.models import User
 from .forms import CustomUserCreationForm, DatosUsuarioForm, EmailLoginForm
 from django.contrib.auth.decorators import login_required
 import requests
@@ -13,6 +11,8 @@ from django.conf import settings
 from .utils import clp_a_usd
 from .decorators import grupo_requerido
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.contrib import messages
+
 
 
 
@@ -66,6 +66,16 @@ def home(request):
         'categorias': categorias,
         'productos': productos,
      }
+    
+    if request.user.is_authenticated:
+        if request.user.groups.filter(name='Bodeguero').exists():
+            context['url_logo'] = reverse('dashboard_bodeguero')
+        elif request.user.groups.filter(name='Vendedor').exists():
+            context['url_logo'] = reverse('dashboard_vendedor') 
+        else:
+            context['url_logo'] = reverse('home')
+    else:
+        url_logo = reverse('home') 
     return render(request, 'home.html', context)
 
 @login_required
@@ -87,6 +97,10 @@ def myaccount(request):
 def agregar_al_carrito(request, producto_id):
     producto = get_object_or_404(Producto, pk=producto_id)
     cantidad = int(request.POST.get('cantidad', 1))
+    
+    if cantidad > producto.stock:
+        return render(request, 'error_stock.html', {'mensaje': 'No hay suficiente stock disponible.'})
+
 
     if request.user.is_authenticated:
         # Carrito por usuario logueado
@@ -346,8 +360,18 @@ def procesar_formulario_usuario(request, redireccion, titulo, boton):
         'texto_boton': boton,
     })
     
+#validar stock
+def validar_stock(items):
+    errores = []
+    for item in items:
+        if item.cantidad > item.producto.stock:
+            errores.append(
+                f"No hay suficiente stock para '{item.producto.nombre}'. Solo hay {item.producto.stock} disponibles."
+            )
+    return errores
+ 
+    
 #lógica de pedidos    
-
 @login_required
 def confirmar_pedido(request):
     usuario = request.user
@@ -356,6 +380,16 @@ def confirmar_pedido(request):
 
     if not carrito or not items.exists():
         return redirect('carrito')  # Si no hay productos, redirige al carrito
+    
+    items = ItemCarrito.objects.filter(carrito=carrito)
+
+    if not items.exists():
+        return redirect('carrito')
+    errores = validar_stock(items)
+    if errores:
+        for error in errores:
+            messages.error(request, error)
+        return redirect('carrito')
 
     total = sum(item.producto.precio_venta * item.cantidad for item in items)
 
@@ -363,9 +397,8 @@ def confirmar_pedido(request):
         'items': items,
         'total': total,
     })
-    
- # elegir método de pago  
-    
+
+# elegir método de pago      
 @login_required
 def elegir_metodo_pago(request):
     if request.method == 'POST':
@@ -375,7 +408,6 @@ def elegir_metodo_pago(request):
     return render(request, 'pedido/elegir_metodo_pago.html')
 
 # integración con API de PayPal
-
 def obtener_token_paypal():
     url = f"{settings.PAYPAL_API_BASE}/v1/oauth2/token"
     headers = {
@@ -543,6 +575,9 @@ def confirmar_pago(request):
                 cantidad=item.cantidad,
                 precio_unitario=item.producto.precio_venta
             )
+            producto = item.producto
+            producto.stock -= item.cantidad
+            producto.save()
         
         # guardar metodo de pago
         metodo_paypal, _ = MetodoPago.objects.get_or_create(nombre="PayPal", defaults={"descripcion": "Pago a través de PayPal"})
@@ -575,7 +610,8 @@ def dashboard_bodeguero(request):
 
 @grupo_requerido('Bodeguero')
 def pedidos_pendientes(request):
-    pedidos = Pedido.objects.filter(estado__nombre__in=['Pendiente', 'En preparación'])
+    estado_preparando = EstadoPedido.objects.get(nombre="En preparación")
+    pedidos = Pedido.objects.filter(estado=estado_preparando)
     return render(request, 'pedido/bodeguero/pedidos_pendientes.html', {'pedidos': pedidos})
 
 @grupo_requerido('Bodeguero')
@@ -583,10 +619,7 @@ def pedido_detalle(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
     if request.method == 'POST':
         accion = request.POST.get('accion')
-        if accion == 'preparar':
-            estado_preparando = EstadoPedido.objects.get(nombre="En preparación")
-            pedido.estado = estado_preparando
-        elif accion == 'listo':
+        if accion == 'listo':
             estado_listo = EstadoPedido.objects.get(nombre="Listo para despacho")
             pedido.estado = estado_listo
         pedido.save()
@@ -629,8 +662,21 @@ def aprobar_rechazar_pedido(request, pedido_id):
 @grupo_requerido('Vendedor')
 def pedidos_despacho(request):
     estado_preparado = EstadoPedido.objects.get(nombre="Listo para despacho")
-    pedidos = Pedido.objects.filter(estado=estado_preparado) # 'listo para despacho'
+    pedidos = Pedido.objects.filter(estado=estado_preparado)
+
     return render(request, 'pedido/vendedor/pedidos_despacho.html', {'pedidos': pedidos})
+
+@grupo_requerido('Vendedor')
+def despachar_pedido(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    
+    estado_despachado = EstadoPedido.objects.get(nombre="Despachado")
+    pedido.estado = estado_despachado
+    pedido.save()
+
+    messages.success(request, f"El pedido #{pedido.id} ha sido despachado.")
+
+    return redirect('pedidos_despacho')
 
 @grupo_requerido('Vendedor')
 def dashboard_vendedor(request):

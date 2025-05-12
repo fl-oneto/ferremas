@@ -65,6 +65,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'tienda.context_processors.categorias_disponibles',
                 'tienda.context_processors.regiones_comunas',
+                'tienda.context_processors.url_logo',
+
             ],
         },
     },

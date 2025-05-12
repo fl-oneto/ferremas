@@ -6,12 +6,12 @@
 
 <p><strong>Cliente:</strong> {{ pedido.cliente.email }}</p>
 <p><strong>Fecha:</strong> {{ pedido.fecha }}</p>
-<p><strong>Estado actual:</strong> {{ pedido.get_estado_display }}</p>
+<p><strong>Estado actual:</strong> {{ pedido.estado.nombre }}</p>
 
 <!-- Lista de productos del pedido -->
 <table>
   <tr><th>Producto</th><th>Cantidad</th></tr>
-  {% for item in pedido.items.all %}
+  {% for item in pedido.detallepedido_set.all %}
   <tr>
     <td>{{ item.producto.nombre }}</td>
     <td>{{ item.cantidad }}</td>
@@ -20,12 +20,8 @@
 </table>
 
 <!-- Botón para cambiar estado -->
-{% if pedido.estado == 'pendiente' %}
-  <form method="post">
-    {% csrf_token %}
-    <button name="accion" value="preparar">Aceptar y preparar pedido</button>
-  </form>
-{% elif pedido.estado == 'preparando' %}
+
+{% if pedido.estado.id == 3 %}
   <form method="post">
     {% csrf_token %}
     <button name="accion" value="listo">Marcar como listo para despacho</button>
