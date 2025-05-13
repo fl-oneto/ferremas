@@ -36,5 +36,7 @@ urlpatterns = [
     path('vendedor/', views.dashboard_vendedor, name='dashboard_vendedor'),
     path('about/', views.about, name='about'),
     path('faq/', views.faq, name='faq'),
+    path('contact/', views.contact, name='contact'),
+    path('joinus/', views.joinus, name='joinus'),
 ]
 

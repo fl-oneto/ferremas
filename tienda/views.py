@@ -85,6 +85,11 @@ def about(request):
 def faq(request):
     return render(request, 'core/faq.html')
 
+def joinus(request):
+    return render(request, 'core/joinus.html')
+
+def contact(request):
+    return render(request, 'core/contact.html')
 
 @login_required
 def myaccount(request):

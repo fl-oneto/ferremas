@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load filtros_personalizados %}
+
+{% block title %}Únete a Nosotros - Ferremas{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <h1 class="mb-4 text-center">Trabaja con nosotros</h1>
+      <p class="lead text-center">¿Quieres formar parte del equipo de <strong>Ferremas</strong>? Completa el siguiente formulario para postular.</p>
+
+      <form class="mt-4 shadow p-4 rounded bg-light">
+        <div class="mb-3">
+          <label for="nombre" class="form-label">Nombre completo</label>
+          <input type="text" class="form-control" id="nombre" name="nombre">
+        </div>
+
+        <div class="mb-3">
+          <label for="correo" class="form-label">Correo electrónico</label>
+          <input type="email" class="form-control" id="correo" name="correo">
+        </div>
+
+        <div class="mb-3">
+          <label for="telefono" class="form-label">Teléfono</label>
+          <input type="text" class="form-control" id="telefono" name="telefono">
+        </div>
+
+        <div class="mb-3">
+          <label for="cv" class="form-label">Currículum (PDF o DOC)</label>
+          <input type="file" class="form-control" id="cv" name="cv" accept=".pdf,.doc,.docx">
+        </div>
+
+        <div class="mb-3">
+          <label for="mensaje" class="form-label">Mensaje o presentación</label>
+          <textarea class="form-control" id="mensaje" name="mensaje" rows="5"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Enviar postulación</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
