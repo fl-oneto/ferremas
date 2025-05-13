@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load filtros_personalizados %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="mb-4">Mi Cuenta</h2>
+
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Información del Usuario</h5>
+        
+          <p><strong>Nombre:</strong> {{ usuario.perfil.nombre }} {{usuario.perfil.primer_apellido}} {{usuario.perfil.segundo_apellido}}</p>
+          <p><strong>Email:</strong> {{ usuario.email }}</p>
+        
+          {% if telefono %}
+            <p><strong>Teléfono:</strong> {{ telefono.numero }}</p>
+          {% endif %}
+        
+          {% if direccion %}
+            <p><strong>Dirección:</strong> {{ direccion.calle }} {{ direccion.numero }}, {{ direccion.comuna.nombre }}, {{ direccion.comuna.region.nombre }}</p>
+          {% endif %}
+        
+          <a href="{% url 'editar_perfil' %}" class="btn btn-sm btn-outline-primary">Editar Datos</a>
+        </div>
+        
+      </div>
+
+      <form method="POST" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger w-100">Cerrar sesión</button>
+      </form>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Mis Pedidos</h5>
+          {% if pedidos %}
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Fecha</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pedido in pedidos %}
+                  <tr>
+                    <td>{{ pedido.id }}</td>
+                    <td>{{ pedido.fecha|date:"d M Y" }}</td>
+                    <td>${{ pedido.total|formatear_pesos }}</td>
+                    <td>{{ pedido.estado }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <p>No tienes pedidos aún.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load filtros_personalizados %}
+
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li class="{{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+
+{% block content %}
+  <section class="carrito">
+    <div class="container">
+      <div class="row justify-content-center">
+        <!-- Columna para la tabla -->
+        <div class="col-lg-8">
+          <!-- columna articulos -->
+          <h2>Carrito de Compras</h2>
+          {% if items %}
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">Producto</th>
+                  <th class="d-none d-sm-table-cell">Cantidad</th>
+                  <th scope="col">Precio Unitario</th>
+                  <th scope="col">Subtotal</th>
+                  <th class="d-none d-sm-table-cell">Eliminar</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in items %}
+                  <tr>
+                    <td>
+                      <img src="{{ item.producto.imagen.url }}" alt="{{ item.producto.nombre }}" width="50" height="50" />
+                      {{ item.producto.nombre }}
+                    </td>
+                    <td class="d-none d-sm-table-cell">{{ item.cantidad }}</td>
+                    <td>${{ item.producto.precio_venta|formatear_pesos }}</td>
+                    <td>${{ item.subtotal|formatear_pesos }}</td>
+                    <td class="d-none d-sm-table-cell">
+                      <form method="post" action="{% url 'eliminar_del_carrito' item.producto.id %}">
+                        {% csrf_token %}
+                        <button type="submit">Eliminar</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+
+            <!-- Formulario para vaciar carrito -->
+            <form method="post" action="{% url 'vaciar_carrito' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">Vaciar carrito</button>
+            </form>
+          {% else %}
+            <p>Tu carrito está vacío.</p>
+          {% endif %}
+        </div>
+
+        <!-- Columna para el resumen -->
+        <div class="col-md-3 bg-body-tertiary">
+          <div class="p-3">
+            <h4>Costo Estimado De Envío</h4>
+            Región<select class="form-select" aria-label="Region" id="region-select">
+              <option selected>Seleccione su Región</option>
+              {% for region_id, comunas in regiones_comunas.items %}
+                <option value="{{ region_id }}">{{ comunas.first.region.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="p-3">
+            Comuna <br />
+            <select class="form-select" aria-label="Comuna" id="comuna-select">
+              <option selected>Seleccione su Comuna</option>
+            </select>
+          </div>
+          <div class="p-3">
+            <button type="button" class="btn btn-secondary w-100">Calcular Envío</button>
+          </div>
+          <div class="p-3">
+            <h4 class="text-center">Total a Pagar:</h4>
+            <h5 class="precios text-center">{{ total|formatear_pesos }}</h5>
+          </div>
+          <div class="p-3">
+            <a href="{% url 'completar_datos_usuario' %}" class="btn btn-primary w-100">Pagar</a>
+        </div>
+        
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Obtener los datos de las regiones y comunas del template
+    const regionesComunas = {
+      {% for region_id, comunas in regiones_comunas.items %}
+        "{{ region_id }}": [
+          {% for comuna in comunas %}
+            { "id": "{{ comuna.id }}", "nombre": "{{ comuna.nombre }}" },
+          {% endfor %}
+        ],
+      {% endfor %}
+    };
+  
+    // Función para actualizar el select de las comunas según la región seleccionada
+    document.getElementById('region-select').addEventListener('change', function() {
+      const regionId = this.value;
+      const comunaSelect = document.getElementById('comuna-select');
+      
+      // Limpiar las opciones anteriores
+      comunaSelect.innerHTML = '<option selected>Seleccione su Comuna</option>';
+  
+      if (regionId) {
+        // Obtener las comunas correspondientes a la región seleccionada
+        const comunas = regionesComunas[regionId] || [];
+  
+        // Agregar las opciones de las comunas al select
+        comunas.forEach(function(comuna) {
+          const option = document.createElement('option');
+          option.value = comuna.id;
+          option.textContent = comuna.nombre;
+          comunaSelect.appendChild(option);
+        });
+      }
+    });
+  </script>
+{% endblock %}

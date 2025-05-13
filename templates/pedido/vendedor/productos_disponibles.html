@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load filtros_personalizados %}
+{% block content %}
+<h2>Productos disponibles en bodega</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Stock</th>
+      <th>Precio</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for producto in productos %}
+    <tr>
+      <td>{{ producto.nombre }}</td>
+      <td>{{ producto.stock }}</td>
+      <td>${{ producto.precio_venta|formatear_pesos }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="3">No hay productos disponibles.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>{{ titulo|default:"Editar perfil" }}</h2>  
+    <form method="post" id="datosUsuarioForm">
+    {% csrf_token %}
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        {{ form.nombre.label_tag }} {{ form.nombre }}
+      </div>
+      <div class="col-md-6 mb-3">
+        {{ form.primer_apellido.label_tag }} {{ form.primer_apellido }}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        {{ form.segundo_apellido.label_tag }} {{ form.segundo_apellido}}
+      </div>
+      <div class="col-md-6 mb-3">
+      <div class="col-md-6 mb-3">
+        {{ form.telefono.label_tag }} {{ form.telefono }}
+      </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+          {{ form.region.label_tag }} {{ form.region }}
+        </div>
+        <div class="col-md-6 mb-3">
+          {{ form.comuna.label_tag }} {{ form.comuna }}
+        </div>
+      </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        {{ form.calle.label_tag }} {{ form.calle }}
+      </div>
+      <div class="col-md-6 mb-3">
+        {{ form.numero.label_tag }} {{ form.numero }}
+      </div>
+    </div>
+
+    {% if form.errors %}
+        <div class="alert alert-danger">
+            <ul>
+            {% for field in form %}
+                {% for error in field.errors %}
+                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+
+    <button type="submit" class="btn btn-primary">{{ texto_boton }}</button>
+  </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  // Actualiza comunas según la región seleccionada
+  $('#id_region').change(function () {
+    const regionId = $(this).val();
+
+    if (regionId) {
+      $.ajax({
+        url: '{% url "cargar_comunas" %}',
+        data: {
+          'region': regionId
+        },
+        success: function (data) {
+          const comunaSelect = $('#id_comuna');
+          comunaSelect.empty();
+          comunaSelect.append('<option value="">Seleccione una comuna</option>');
+          data.forEach(function (comuna) {
+            comunaSelect.append(`<option value="${comuna.id}">${comuna.nombre}</option>`);
+          });
+        }
+      });
+    } else {
+      $('#id_comuna').empty();
+    }
+  });
+</script>
+{% endblock %}

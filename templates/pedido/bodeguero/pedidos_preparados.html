@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load filtros_personalizados %}
+
+{% block content %}
+<h2>Pedidos Listos para Despacho</h2>
+<table>
+  <tr>
+    <th>ID</th>
+    <th>Cliente</th>
+    <th>Fecha</th>
+    <th>Acciones</th>
+  </tr>
+  {% for pedido in pedidos %}
+  <tr>
+    <td>{{ pedido.id }}</td>
+    <td>{{ pedido.cliente.email }}</td>
+    <td>{{ pedido.fecha }}</td>
+    <td>Esperando que el vendedor lo despache</td>
+  </tr>
+  {% endfor %}
+</table>
+
+
+{% endblock %}

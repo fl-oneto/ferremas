@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+  <section class="pago">
+    <div class="container">
+      <h2>Carrito de Compras</h2>
+      
+      {% if carrito %}
+        <p>Total de productos: {{ carrito.items }}</p>
+        <p>Total a pagar: ${{ total }}</p>
+
+        <form method="post">
+          {% csrf_token %}
+          <button class="btn btn-primary" type="submit" name="iniciar_sesion">Ir a Pagar</button>
+        </form>
+      {% else %}
+        <p>No tienes productos en tu carrito.</p>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

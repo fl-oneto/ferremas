@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load filtros_personalizados %}
+
+{% block content %}
+<h2>Pedidos Pendientes</h2>
+<table>
+  <tr>
+    <th>ID</th>
+    <th>Cliente</th>
+    <th>Fecha</th>
+    <th>Acciones</th>
+  </tr>
+  {% for pedido in pedidos %}
+  <tr>
+    <td>{{ pedido.id }}</td>
+    <td>{{ pedido.cliente.email }}</td>
+    <td>{{ pedido.fecha }}</td>
+    <td>
+      <a href="{% url 'detalle_pedido' pedido.id %}">Ver / Preparar</a>
+    </td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="4">No hay pedidos pendientes.</td></tr>
+  {% endfor %}
+</table>
+
+
+{% endblock %}

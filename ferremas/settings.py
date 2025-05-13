@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'tienda',
 ]
 
 MIDDLEWARE = [
@@ -54,13 +55,18 @@ ROOT_URLCONF = 'ferremas.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates',
+                 ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'tienda.context_processors.categorias_disponibles',
+                'tienda.context_processors.regiones_comunas',
+                'tienda.context_processors.url_logo',
+
             ],
         },
     },
@@ -115,8 +121,30 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+import os
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_REDIRECT_URL = '/redirect/'
+LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = '/login/'
+
+LANGUAGE_CODE = 'es' 
+
+
+PAYPAL_CLIENT_ID = "AR1vNTP4T4qHXRrg4bIMu85vhPRRUjKMN3fxnqZEu81SWUnhFVUXb3KQxKBlDeB11z_mMiUgVJKgSGEb"
+PAYPAL_CLIENT_SECRET = "EFri5x7m0DWyEh329-mtkN0sR2yoRUBQjLB06t1zcMr_usfO_wrEBlx5VG5RLX9t3SfKX9fad4H0Xbts"
+PAYPAL_MODE = "sandbox"
+PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com"
+
+EXCHANGERATE_API_KEY = "a98ecd8610b4b4ce34553b9e071c1da2"
+
