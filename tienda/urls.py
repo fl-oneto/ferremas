@@ -34,11 +34,7 @@ urlpatterns = [
     path('vendedor/despacho/', views.pedidos_despacho, name='pedidos_despacho'),
     path('pedido/<int:pedido_id>/despachar/', views.despachar_pedido, name='despachar_pedido'),
     path('vendedor/', views.dashboard_vendedor, name='dashboard_vendedor'),
-<<<<<<< HEAD
     path('about/', views.about, name='about'),
     path('faq/', views.faq, name='faq'),
-=======
-
->>>>>>> main
 ]
 
