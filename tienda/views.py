@@ -6,7 +6,7 @@ from .models import Categoria, Producto, Region, Comuna, Direccion, Telefono, Un
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .forms import ClienteCreationForm, DatosUsuarioForm, EmailLoginForm, TrabajadorCreationForm
+from .forms import ClienteCreationForm, DatosUsuarioForm, EmailLoginForm, TrabajadorCreationForm, ProductoForm
 from django.contrib.auth.decorators import login_required
 import requests
 from django.conf import settings
@@ -748,3 +748,53 @@ def eliminar_usuario(request, usuario_id):
     usuario = get_object_or_404(User, id=usuario_id)
     usuario.delete()
     return redirect('gestion_usuarios')
+
+# crud productos gestion admin
+
+@grupo_requerido('Administrador')
+def gestion_productos(request):
+    productos = Producto.objects.all()
+    return render(request, 'panel_admin/gestion_productos.html', {'productos': productos})
+
+@grupo_requerido('Administrador')
+def crear_producto(request):
+    if request.method == 'POST':
+        print("POST recibido:", request.POST)
+        form = ProductoForm(request.POST, request.FILES)
+        if form.is_valid():
+            print("Formulario válido")
+            producto = form.save(commit=False)
+            nueva_categoria = form.cleaned_data.get('nueva_categoria')
+            if nueva_categoria:
+                categoria, _ = Categoria.objects.get_or_create(nombre=nueva_categoria)
+                producto.categoria = categoria
+            else:
+                producto.categoria = form.cleaned_data['categoria']
+            producto.save()
+            messages.success(request, f'Producto "{producto.nombre}" agregado correctamente.')
+            return redirect('gestion_productos')
+        else:
+            print("Formulario inválido:", form.errors)
+            messages.error(request, 'Por favor corrige los errores en el formulario.')
+
+    else:
+        form = ProductoForm()
+    return render(request, 'panel_admin/form_producto.html', {'form': form})
+
+@grupo_requerido('Administrador')
+def editar_producto(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
+    if request.method == 'POST':
+        form = ProductoForm(request.POST, request.FILES, instance=producto)
+        if form.is_valid():
+            form.save()
+            return redirect('gestion_productos')
+    else:
+        form = ProductoForm(instance=producto)
+    return render(request, 'panel_admin/form_producto.html', {'form': form})
+
+@grupo_requerido('Administrador')
+def eliminar_producto(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
+    producto.delete()
+    return redirect('gestion_productos')

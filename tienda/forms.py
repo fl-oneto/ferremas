@@ -1,5 +1,5 @@
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import Comuna, Region
+from .models import Comuna, Region, Producto, Categoria
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate
@@ -114,3 +114,28 @@ class CustomUserChangeForm(UserChangeForm):
         super().__init__(*args, **kwargs)
         self.fields['groups'].queryset = Group.objects.filter(name__in=GRUPOS_VISIBLES)
         self.fields['groups'].label = "Rol"
+
+class ProductoForm(forms.ModelForm):
+    nueva_categoria = forms.CharField(
+        required=False,
+        label="Nueva categoría",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    class Meta:
+        model = Producto
+        fields = [
+            'nombre', 'descripcion', 'stock',
+            'precio_venta', 'precio_compra',
+            'categoria', 'unidad_medida', 'imagen'
+        ]
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'stock': forms.NumberInput(attrs={'class': 'form-control'}),
+            'precio_venta': forms.NumberInput(attrs={'class': 'form-control'}),
+            'precio_compra': forms.NumberInput(attrs={'class': 'form-control'}),
+            'categoria': forms.Select(attrs={'class': 'form-select', 'id': 'id_categoria'}),
+            'unidad_medida': forms.Select(attrs={'class': 'form-select'}),
+            'imagen': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
