@@ -25,3 +25,10 @@ def url_logo(request):
         elif request.user.groups.filter(name='Vendedor').exists():
             return {'url_logo': reverse('dashboard_vendedor')}
     return {'url_logo': reverse('home')}
+
+def grupo_usuario(request):
+    grupo = None
+    if request.user.is_authenticated:
+        grupos = request.user.groups.values_list('name', flat=True)
+        grupo = grupos[0] if grupos else None
+    return {'grupo_usuario': grupo}
