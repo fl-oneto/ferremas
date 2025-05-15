@@ -78,6 +78,19 @@ def home(request):
         url_logo = reverse('home') 
     return render(request, 'home.html', context)
 
+
+def about(request):
+    return render(request, 'core/about.html')
+
+def faq(request):
+    return render(request, 'core/faq.html')
+
+def joinus(request):
+    return render(request, 'core/joinus.html')
+
+def contact(request):
+    return render(request, 'core/contact.html')
+
 @login_required
 def myaccount(request):
     usuario = request.user

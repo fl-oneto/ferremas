@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load filtros_personalizados %}
+
+{% block title %}Contacto - Ferremas{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row mb-4">
+    <div class="col text-center">
+      <h1 class="mb-3">Contáctanos</h1>
+      <p class="lead">¿Tienes dudas, sugerencias o necesitas ayuda? ¡Estamos aquí para ti!</p>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <!-- Formulario de contacto -->
+    <div class="col-md-6">
+      <form class="shadow p-4 rounded bg-light">
+        <div class="mb-3">
+          <label for="nombre" class="form-label">Nombre</label>
+          <input type="text" class="form-control" id="nombre" name="nombre">
+        </div>
+
+        <div class="mb-3">
+          <label for="correo" class="form-label">Correo electrónico</label>
+          <input type="email" class="form-control" id="correo" name="correo">
+        </div>
+
+        <div class="mb-3">
+          <label for="mensaje" class="form-label">Mensaje</label>
+          <textarea class="form-control" id="mensaje" name="mensaje" rows="5"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Enviar mensaje</button>
+      </form>
+    </div>
+   
+  </div>
+</div>
+{% endblock %}
