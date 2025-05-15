@@ -38,5 +38,13 @@ urlpatterns = [
     path('faq/', views.faq, name='faq'),
     path('contact/', views.contact, name='contact'),
     path('joinus/', views.joinus, name='joinus'),
+    path('administrador/', views.dashboard_admin, name='dashboard_admin'),
+    path('administrador/usuarios/', views.gestion_usuarios, name='gestion_usuarios'),
+    path('administrador/usuarios/crear/', views.crear_usuario, name='crear_usuario'),
+    path('administrador/usuarios/<int:usuario_id>/editar/', views.editar_usuario, name='editar_usuario'),
+    path('administrador/usuarios/<int:usuario_id>/eliminar/', views.eliminar_usuario, name='eliminar_usuario'),
+
+
+
 ]
 

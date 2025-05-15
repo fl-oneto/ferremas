@@ -1,12 +1,12 @@
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .models import Comuna, Region
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate
 from django import forms
 import uuid
 
-class CustomUserCreationForm(UserCreationForm):
+class ClienteCreationForm(UserCreationForm):
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Introduce tu correo electrónico'}))
     password1 = forms.CharField( label="Contraseña", widget=forms.PasswordInput(attrs={'class': 'form-control','placeholder': 'Introduce tu contraseña'}))
     password2 = forms.CharField(label="Confirma tu contraseña", widget=forms.PasswordInput(attrs={'class': 'form-control','placeholder': 'Confirma tu contraseña'}))
@@ -93,3 +93,24 @@ class DatosUsuarioForm(forms.Form):
                 self.fields['comuna'].queryset = Comuna.objects.none()
         else:
             self.fields['comuna'].queryset = Comuna.objects.none()
+
+
+GRUPOS_VISIBLES = ['Administrador', 'Vendedor', 'Bodeguero', 'Contador']
+
+class TrabajadorCreationForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password1', 'password2', 'groups']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['groups'].queryset = Group.objects.filter(name__in=GRUPOS_VISIBLES)
+        self.fields['groups'].label = "Rol"
+
+class CustomUserChangeForm(UserChangeForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password', 'groups']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['groups'].queryset = Group.objects.filter(name__in=GRUPOS_VISIBLES)
+        self.fields['groups'].label = "Rol"
