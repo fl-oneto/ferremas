@@ -4,7 +4,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from .models import Categoria, Producto, Region, Comuna, Direccion, Telefono, UnidadMedida, Carrito, ItemCarrito, Pedido, DetallePedido, EstadoPedido, MetodoPago, Pago, Perfil
 from django.contrib.auth import login
-from .forms import CustomUserCreationForm, DatosUsuarioForm, EmailLoginForm
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from .forms import ClienteCreationForm, DatosUsuarioForm, EmailLoginForm, TrabajadorCreationForm, ProductoForm
 from django.contrib.auth.decorators import login_required
 import requests
 from django.conf import settings
@@ -23,8 +25,8 @@ def redirect_post_login(request):
         return redirect('dashboard_bodeguero') 
     elif user.groups.filter(name='Vendedor').exists():
         return redirect('dashboard_vendedor')
-    #elif user.groups.filter(name='Administrador').exists():
-        return redirect('admin:index')  # O tu propio dashboard admin
+    elif user.groups.filter(name='Administrador').exists():
+        return redirect('dashboard_admin')  
     elif user.groups.filter(name='Cliente').exists():
         return redirect('home')  # O la página de productos
     else:
@@ -48,13 +50,13 @@ def login_view(request):
 
 def signup(request):
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
+        form = ClienteCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)  # inicia sesión después del registro
             return redirect('login')  # ajusta esta ruta según tu app
     else:
-        form = CustomUserCreationForm()
+        form = ClienteCreationForm()
     return render(request, 'registro/signup.html', {'form': form})
 
 
@@ -72,6 +74,8 @@ def home(request):
             context['url_logo'] = reverse('dashboard_bodeguero')
         elif request.user.groups.filter(name='Vendedor').exists():
             context['url_logo'] = reverse('dashboard_vendedor') 
+        elif request.user.groups.filter(name='Administrador').exists():
+            context['url_logo'] = reverse('dashboard_admin') 
         else:
             context['url_logo'] = reverse('home')
     else:
@@ -702,3 +706,95 @@ def dashboard_vendedor(request):
         'pedidos_pendientes': pedidos_pendientes,
         'pedidos_despacho': pedidos_despacho,
     })
+
+
+#lógica del administrador
+
+@grupo_requerido('Administrador')
+def dashboard_admin(request):
+    return render(request, 'panel_admin/dashboard.html')
+
+# gestión usuarios
+@grupo_requerido('Administrador')
+def gestion_usuarios(request):
+    usuarios = User.objects.all()
+    return render(request, 'panel_admin/gestion_usuarios.html', {'usuarios': usuarios})
+
+@grupo_requerido('Administrador')
+def crear_usuario(request):
+    if request.method == 'POST':
+        form = TrabajadorCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('gestion_usuarios')
+    else:
+        form = TrabajadorCreationForm()
+    return render(request, 'panel_admin/form_usuario.html', {'form': form})
+
+@grupo_requerido('Administrador')
+def editar_usuario(request, usuario_id):
+    usuario = User.objects.get(id=usuario_id)
+    if request.method == 'POST':
+        form = TrabajadorCreationForm(request.POST, instance=usuario)
+        if form.is_valid():
+            form.save()
+            return redirect('gestion_usuarios')
+    else:
+        form = TrabajadorCreationForm(instance=usuario)
+    return render(request, 'panel_admin/form_usuario.html', {'form': form})
+
+@grupo_requerido('Administrador')
+def eliminar_usuario(request, usuario_id):
+    usuario = get_object_or_404(User, id=usuario_id)
+    usuario.delete()
+    return redirect('gestion_usuarios')
+
+# crud productos gestion admin
+
+@grupo_requerido('Administrador')
+def gestion_productos(request):
+    productos = Producto.objects.all()
+    return render(request, 'panel_admin/gestion_productos.html', {'productos': productos})
+
+@grupo_requerido('Administrador')
+def crear_producto(request):
+    if request.method == 'POST':
+        print("POST recibido:", request.POST)
+        form = ProductoForm(request.POST, request.FILES)
+        if form.is_valid():
+            print("Formulario válido")
+            producto = form.save(commit=False)
+            nueva_categoria = form.cleaned_data.get('nueva_categoria')
+            if nueva_categoria:
+                categoria, _ = Categoria.objects.get_or_create(nombre=nueva_categoria)
+                producto.categoria = categoria
+            else:
+                producto.categoria = form.cleaned_data['categoria']
+            producto.save()
+            messages.success(request, f'Producto "{producto.nombre}" agregado correctamente.')
+            return redirect('gestion_productos')
+        else:
+            print("Formulario inválido:", form.errors)
+            messages.error(request, 'Por favor corrige los errores en el formulario.')
+
+    else:
+        form = ProductoForm()
+    return render(request, 'panel_admin/form_producto.html', {'form': form})
+
+@grupo_requerido('Administrador')
+def editar_producto(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
+    if request.method == 'POST':
+        form = ProductoForm(request.POST, request.FILES, instance=producto)
+        if form.is_valid():
+            form.save()
+            return redirect('gestion_productos')
+    else:
+        form = ProductoForm(instance=producto)
+    return render(request, 'panel_admin/form_producto.html', {'form': form})
+
+@grupo_requerido('Administrador')
+def eliminar_producto(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
+    producto.delete()
+    return redirect('gestion_productos')

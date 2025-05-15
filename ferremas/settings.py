@@ -66,6 +66,7 @@ TEMPLATES = [
                 'tienda.context_processors.categorias_disponibles',
                 'tienda.context_processors.regiones_comunas',
                 'tienda.context_processors.url_logo',
+                'tienda.context_processors.grupo_usuario',
 
             ],
         },
