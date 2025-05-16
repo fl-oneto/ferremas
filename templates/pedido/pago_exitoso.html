@@ -2,8 +2,38 @@
 {% load filtros_personalizados %}
 
 {% block content %}
-<h2>¡Pago exitoso!</h2>
-<p>Gracias {{ nombre }}. Hemos recibido tu pago de {{ monto }} {{ moneda }}.</p>
-<p>Te enviaremos una confirmación a {{ email }}.</p>
+<div class="container py-5 d-flex justify-content-center">
+  <div class="card shadow-lg rounded-4 p-4" style="max-width: 600px; width: 100%;">
+    <div class="text-center mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="text-success mb-3" viewBox="0 0 16 16">
+        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM7 10.586l4.293-4.293-1.414-1.414L7 7.757 6.121 6.879 4.707 8.293 7 10.586z"/>
+      </svg>
+      <h2 class="text-success fw-bold">¡Pago exitoso!</h2>
+      <p class="text-muted">Gracias por tu compra, {{ nombre|default:"Cliente" }}.</p>
+    </div>
 
+    <div class="border rounded-3 p-3 mb-3 bg-light">
+      <h5 class="mb-3 text-center text-primary">Resumen del Pago</h5>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between">
+          <span>Monto:</span>
+          <strong>{{ monto }} {{ moneda }}</strong>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <span>Nombre:</span>
+          <span>{{ nombre }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <span>Correo:</span>
+          <span>{{ email }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="text-center">
+      <p class="mb-2">Te hemos enviado un comprobante a tu correo.</p>
+      <a href="{% url 'home' %}" class="btn btn-outline-primary">Volver al inicio</a>
+    </div>
+  </div>
+</div>
 {% endblock %}
