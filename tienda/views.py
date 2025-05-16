@@ -231,7 +231,7 @@ def productos_por_categoria(request, categoria_id):
     })
 
 
-@login_required
+@grupo_requerido('Cliente')
 def pagar(request):
     # Verificar si el usuario tiene un carrito asociado
     carrito = Carrito.objects.filter(usuario=request.user).first()
@@ -317,7 +317,7 @@ def completar_datos_usuario(request):
         titulo='Confirma tus datos antes de continuar con el pedido',
         boton='Confirmar y continuar'
     )
-
+@login_required
 def procesar_formulario_usuario(request, redireccion, titulo, boton):
     usuario = request.user
     telefono = Telefono.objects.filter(usuario=usuario).first()
@@ -386,7 +386,7 @@ def validar_stock(items):
  
     
 #lógica de pedidos    
-@login_required
+@grupo_requerido('Cliente')
 def confirmar_pedido(request):
     usuario = request.user
     carrito = Carrito.objects.filter(usuario=usuario).first()
@@ -413,7 +413,7 @@ def confirmar_pedido(request):
     })
 
 # elegir método de pago      
-@login_required
+@grupo_requerido('Cliente')
 def elegir_metodo_pago(request):
     if request.method == 'POST':
         # aca manejar otros metodos de pago
@@ -422,6 +422,7 @@ def elegir_metodo_pago(request):
     return render(request, 'pedido/elegir_metodo_pago.html')
 
 # integración con API de PayPal
+@grupo_requerido('Cliente')
 def obtener_token_paypal():
     url = f"{settings.PAYPAL_API_BASE}/v1/oauth2/token"
     headers = {
@@ -446,7 +447,7 @@ def obtener_token_paypal():
         return None
 
 
-
+@grupo_requerido('Cliente')
 def crear_pago(access_token, total_amount, currency='USD',
                return_url='http://localhost:8000/confirmar_pago/',
                cancel_url='http://localhost:8000/cancelar_pago/', direccion=None):
@@ -504,7 +505,7 @@ def crear_pago(access_token, total_amount, currency='USD',
     return data.get("id"), approval_url
 
 
-@login_required
+@grupo_requerido('Cliente')
 def procesar_pago_paypal(request):
     direccion = Direccion.objects.filter(usuario=request.user).first()
     usuario = request.user
@@ -549,7 +550,7 @@ def procesar_pago_paypal(request):
 
     return redirect(approval_url)
 
-@login_required
+@grupo_requerido('Cliente')
 def confirmar_pago(request):
     order_id = request.GET.get('token')
     access_token = obtener_token_paypal()
@@ -616,7 +617,7 @@ def confirmar_pago(request):
     else:
         return render(request, 'pedido/error_pago.html', {'error': response.text})
     
-@login_required   
+@grupo_requerido('Cliente')
 def cancelar_pago(request):
     return render(request, 'pedido/cancelar_pago.html')
 
