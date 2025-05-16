@@ -12,6 +12,15 @@
 
     <hr>
 
+    <div class="container-fluid">
+        <div
+            id="pedidos"
+            data-en-preparacion="{{ pedidos_preparacion }}"
+            data-listos="{{ pedidos_listos }}"
+            style="height: 400px;">
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-6">
             <div class="card shadow-sm mb-4">
@@ -34,4 +43,5 @@
         </div>
     </div>
 </div>
+
 {% endblock %}

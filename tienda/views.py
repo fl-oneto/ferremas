@@ -623,7 +623,14 @@ def confirmar_pago(request):
 
 @grupo_requerido('Bodeguero')
 def dashboard_bodeguero(request):
-    return render(request, 'pedido/bodeguero/dashboard.html')
+    
+    pedidos_preparacion = Pedido.objects.filter(estado='3').count()
+    pedidos_listos = Pedido.objects.filter(estado='4').count()
+    context = {
+        'pedidos_preparacion': pedidos_preparacion,
+        'pedidos_listos': pedidos_listos,
+    }
+    return render(request, 'pedido/bodeguero/dashboard.html', context)
 
 @grupo_requerido('Bodeguero')
 def pedidos_pendientes(request):
