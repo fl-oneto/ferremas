@@ -61,6 +61,14 @@ def signup(request):
 
 
 def home(request):
+    if request.user.is_authenticated:
+        if request.user.groups.filter(name='Administrador').exists():
+            return redirect('dashboard_admin')
+        elif request.user.groups.filter(name='Vendedor').exists():
+            return redirect('dashboard_vendedor')
+        elif request.user.groups.filter(name='Bodeguero').exists():
+            return redirect('dashboard_bodeguero')
+        
     categorias = Categoria.objects.all()
     productos = Producto.objects.all()
 
@@ -69,17 +77,6 @@ def home(request):
         'productos': productos,
      }
     
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Bodeguero').exists():
-            context['url_logo'] = reverse('dashboard_bodeguero')
-        elif request.user.groups.filter(name='Vendedor').exists():
-            context['url_logo'] = reverse('dashboard_vendedor') 
-        elif request.user.groups.filter(name='Administrador').exists():
-            context['url_logo'] = reverse('dashboard_admin') 
-        else:
-            context['url_logo'] = reverse('home')
-    else:
-        url_logo = reverse('home') 
     return render(request, 'home.html', context)
 
 
@@ -618,6 +615,10 @@ def confirmar_pago(request):
         })
     else:
         return render(request, 'pedido/error_pago.html', {'error': response.text})
+    
+@login_required   
+def cancelar_pago(request):
+    return render(request, 'pedido/cancelar_pago.html')
 
 # lógica de vista de bodeguero
 
