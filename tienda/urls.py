@@ -23,6 +23,7 @@ urlpatterns = [
     path('elegir_metodo_pago/', views.elegir_metodo_pago, name='elegir_metodo_pago'),
     path('procesar_pago_paypal/', views.procesar_pago_paypal, name='procesar_pago_paypal'),
     path('confirmar_pago/', views.confirmar_pago, name='confirmar_pago'),
+    path('cancelar_pago/', views.cancelar_pago, name='cancelar_pago'),
     path('bodeguero/', views.dashboard_bodeguero, name='dashboard_bodeguero'),
     path('bodeguero/pedidos/', views.pedidos_pendientes, name='pedidos_pendientes'),
     path('bodeguero/pedido/<int:pedido_id>/', views.pedido_detalle, name='detalle_pedido'),

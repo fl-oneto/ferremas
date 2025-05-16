@@ -615,6 +615,10 @@ def confirmar_pago(request):
         })
     else:
         return render(request, 'pedido/error_pago.html', {'error': response.text})
+    
+@login_required   
+def cancelar_pago(request):
+    return render(request, 'pedido/cancelar_pago.html')
 
 # lógica de vista de bodeguero
 
