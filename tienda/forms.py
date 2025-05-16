@@ -1,12 +1,12 @@
-from django.contrib.auth.forms import UserCreationForm
-from .models import Comuna, Region
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from .models import Comuna, Region, Producto, Categoria
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate
 from django import forms
 import uuid
 
-class CustomUserCreationForm(UserCreationForm):
+class ClienteCreationForm(UserCreationForm):
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Introduce tu correo electrónico'}))
     password1 = forms.CharField( label="Contraseña", widget=forms.PasswordInput(attrs={'class': 'form-control','placeholder': 'Introduce tu contraseña'}))
     password2 = forms.CharField(label="Confirma tu contraseña", widget=forms.PasswordInput(attrs={'class': 'form-control','placeholder': 'Confirma tu contraseña'}))
@@ -93,3 +93,49 @@ class DatosUsuarioForm(forms.Form):
                 self.fields['comuna'].queryset = Comuna.objects.none()
         else:
             self.fields['comuna'].queryset = Comuna.objects.none()
+
+
+GRUPOS_VISIBLES = ['Administrador', 'Vendedor', 'Bodeguero', 'Contador']
+
+class TrabajadorCreationForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password1', 'password2', 'groups']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['groups'].queryset = Group.objects.filter(name__in=GRUPOS_VISIBLES)
+        self.fields['groups'].label = "Rol"
+
+class CustomUserChangeForm(UserChangeForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password', 'groups']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['groups'].queryset = Group.objects.filter(name__in=GRUPOS_VISIBLES)
+        self.fields['groups'].label = "Rol"
+
+class ProductoForm(forms.ModelForm):
+    nueva_categoria = forms.CharField(
+        required=False,
+        label="Nueva categoría",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    class Meta:
+        model = Producto
+        fields = [
+            'nombre', 'descripcion', 'stock',
+            'precio_venta', 'precio_compra',
+            'categoria', 'unidad_medida', 'imagen'
+        ]
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'stock': forms.NumberInput(attrs={'class': 'form-control'}),
+            'precio_venta': forms.NumberInput(attrs={'class': 'form-control'}),
+            'precio_compra': forms.NumberInput(attrs={'class': 'form-control'}),
+            'categoria': forms.Select(attrs={'class': 'form-select', 'id': 'id_categoria'}),
+            'unidad_medida': forms.Select(attrs={'class': 'form-select'}),
+            'imagen': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }

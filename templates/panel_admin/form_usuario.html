@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filtros_personalizados %}
+
+{% block title %}
+    Formulario de Usuario
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h2 class="mb-4">Formulario de Usuario</h2>
+
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label for="id_username" class="form-label">Nombre de usuario</label>
+            {{ form.username|add_class:"form-control" }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_email" class="form-label">Correo electrónico</label>
+            {{ form.email|add_class:"form-control" }}
+        </div>
+
+        {% if form.password1 %}
+        <div class="mb-3">
+            <label for="id_password1" class="form-label">Contraseña</label>
+            {{ form.password1|add_class:"form-control" }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_password2" class="form-label">Confirmar contraseña</label>
+            {{ form.password2|add_class:"form-control" }}
+        </div>
+        {% endif %}
+
+        {% if form.password %}
+        <div class="mb-3">
+            <label for="id_password" class="form-label">Contraseña</label>
+            {{ form.password|add_class:"form-control" }}
+        </div>
+        {% endif %}
+
+        <div class="mb-3">
+            <label for="id_groups" class="form-label">Rol</label>
+            {{ form.groups|add_class:"form-select" }}
+        </div>
+
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <a href="{% url 'gestion_usuarios' %}" class="btn btn-secondary">Volver</a>
+    </form>
+</div>
+{% endblock %}
