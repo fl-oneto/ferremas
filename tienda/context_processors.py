@@ -24,6 +24,8 @@ def url_logo(request):
             return {'url_logo': reverse('dashboard_bodeguero')}
         elif request.user.groups.filter(name='Vendedor').exists():
             return {'url_logo': reverse('dashboard_vendedor')}
+        elif request.user.groups.filter(name='Administrador').exists():
+            return {'url_logo': reverse('dashboard_admin')}
     return {'url_logo': reverse('home')}
 
 def grupo_usuario(request):

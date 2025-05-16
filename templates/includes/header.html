@@ -3,13 +3,13 @@
 
 <header>
   <div class="container-fluid">
-    <div class="row py-3 border-bottom">
+    <div class="row py-3 border-bottom align-items-center">
       <div class="col-sm-4 col-lg-3 text-center text-sm-start">
         <div class="main-logo">
           <a href="{{ url_logo }}"><img src="{% static 'images/logo1.png' %}" alt="logo" class="img-fluid" /></a>
         </div>
       </div>
-      {% if grupo_usuario == "cliente" or grupo_usuario == None %}
+      {% if grupo_usuario == "Cliente" or grupo_usuario == None %}
         <div class="col-sm-6 offset-sm-2 offset-md-0 col-lg-5 d-none d-lg-block">
           <div class="search-bar row bg-light p-2 my-2 rounded-4">
             <div class="col-md-4 d-none d-md-block">
@@ -36,11 +36,48 @@
             </div>
           </div>
         </div>
+      {% else %}
+      <div class="col-sm-8 col-lg-5 d-flex justify-content-end gap-5 align-items-center mt-4 mt-sm-0 justify-content-center justify-content-sm-end">
+        <div>
+          Hola, {{ user.perfil.nombre|default:user.email }}!
+        </div>
+        {% if grupo_usuario == "Administrador"%}
+        <div>
+        <a href="{% url 'gestion_usuarios' %}">  
+          Gestionar Usuarios
+        </a> | 
+        <a href="{% url 'gestion_productos' %}">  
+          Gestionar Productos
+        </a>       
+        </div>
+        {% elif grupo_usuario == "Vendedor" %}
+        <div>
+        <a href="{% url 'pedidos_por_aprobar' %}">  
+          Aprobar Pedidos
+        </a> | 
+        <a href="{% url 'pedidos_despacho' %}">  
+          Despachar Pedidos
+        </a>       
+        </div>
+        {% elif grupo_usuario == "Bodeguero" %}
+        <div>
+        <a href="{% url 'pedidos_pendientes' %}">  
+          Preparar Pedidos
+        </a> | 
+        <a href="{% url 'pedidos_preparados' %}">  
+          Gestionar Entregas
+        </a>       
+        </div>
+        {% endif %}
+      </div>
+    
       {% endif %}
+      
 
       <div class="col-sm-8 col-lg-4 d-flex justify-content-end gap-5 align-items-center mt-4 mt-sm-0 justify-content-center justify-content-sm-end">
         <ul class="d-flex justify-content-end list-unstyled m-0">
           <li>
+
             {% if user.is_authenticated %}
               
               <div class="d-flex align-items-center">
@@ -72,7 +109,7 @@
             </li>
             {% endif %}
           </li>
-          {% if grupo_usuario == "cliente" or grupo_usuario == None %}
+          {% if grupo_usuario == "Cliente" or grupo_usuario == None %}
             <li class="d-lg-none">
               <a href="{% url 'ver_carrito' %}" class="rounded-circle bg-light p-2 mx-1" >
                 <svg width="24" height="24" viewBox="0 0 24 24">
@@ -89,7 +126,7 @@
             </li>
           {% endif %}
         </ul>
-        {% if grupo_usuario == "cliente" or grupo_usuario == None %}
+        {% if grupo_usuario == "Cliente" or grupo_usuario == None %}
           <div class="text-end d-none d-lg-block">
             <div class="d-flex align-items-center justify-content-end mb-1">
                 <a href="{% url 'ver_carrito' %}" class="rounded-circle bg-light p-2 d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="Carrito">
@@ -109,7 +146,7 @@
     </div>
   </div>
   
-  
+  {% if grupo_usuario == "Cliente" or grupo_usuario == None %}
    <div class="container-fluid">
     <div class="row py-3">
       <div class="d-flex justify-content-center justify-content-sm-between align-items-center">
@@ -175,6 +212,7 @@
       </div>
     </div>
   </div>
+  {% endif %}
 </header>
 
 <script>
