@@ -6,9 +6,8 @@
 {% endblock %}
 
 {% block content %}
-
-
 <div class="container my-4">
+<div id="reporte-pdf">
     <h2 class="mb-4">Gestión de Productos</h2>
     {% if messages %}
     <div class="container mt-3">
@@ -21,13 +20,18 @@
     </div>
     {% endif %}
 
-    <div class="mb-3">
-        <a href="{% url 'crear_producto' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Agregar nuevo producto
-        </a>
-        <a href="{% url 'dashboard_admin' %}" class="btn btn-secondary ms-2">
-            <i class="bi bi-arrow-left-circle"></i> Volver al Dashboard
-        </a>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="mb-3">
+            <a href="{% url 'crear_producto' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Agregar nuevo producto
+            </a>
+            <a href="{% url 'dashboard_admin' %}" class="btn btn-secondary ms-2">
+                <i class="bi bi-arrow-left-circle"></i> Volver al Dashboard
+            </a>
+        </div>
+        <button id="btn-descargar" class="btn btn-primary">
+            Descargar como PDF
+        </button>
     </div>
 
     <div class="table-responsive">
@@ -59,6 +63,7 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
     </div>
 </div>
 {% endblock %}
