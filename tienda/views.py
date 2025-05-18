@@ -705,15 +705,14 @@ def despachar_pedido(request, pedido_id):
 
 @grupo_requerido('Vendedor')
 def dashboard_vendedor(request):
-    productos = Producto.objects.all()
-    pedidos_pendientes = Pedido.objects.filter(estado__nombre="Por aprobar")
-    pedidos_despacho = Pedido.objects.filter(estado__nombre="Listo para despacho")
-
-    return render(request, 'pedido/vendedor/dashboard.html', {
-        'productos': productos,
+    
+    pedidos_pendientes = Pedido.objects.filter(estado='2').count()
+    pedidos_despachados = Pedido.objects.filter(estado='5').count()
+    context = {
         'pedidos_pendientes': pedidos_pendientes,
-        'pedidos_despacho': pedidos_despacho,
-    })
+        'pedidos_despachados': pedidos_despachados,
+    }
+    return render(request, 'pedido/vendedor/dashboard.html', context)
 
 
 #lógica del administrador
