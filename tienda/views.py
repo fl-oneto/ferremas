@@ -72,8 +72,14 @@ def home(request):
             return redirect('dashboard_vendedor')
         elif request.user.groups.filter(name='Bodeguero').exists():
             return redirect('dashboard_bodeguero')
+        elif request.user.groups.filter(name='Contador').exists():
+            return redirect('dashboard_contador')
         
-    categorias = Categoria.objects.all()
+    categorias = (
+        Categoria.objects
+        .prefetch_related('producto_set') 
+        .order_by('nombre')
+    )
     productos = Producto.objects.all()
 
     context = {
@@ -238,8 +244,7 @@ def productos_por_categoria(request, categoria_id):
         'categoria': categoria,
         'productos': productos
     })
-
-
+    
 @grupo_requerido('Cliente')
 def pagar(request):
     # Verificar si el usuario tiene un carrito asociado
