@@ -6,8 +6,5 @@ __pycache__/
 *.pyc
 .DS_Store
 .vscode/
-*sqlite3
-*db
-.db
-*db.sqlite3
-.db.sqlite3
+db.sqlite3
+
