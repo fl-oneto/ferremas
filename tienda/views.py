@@ -4,7 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from .models import Categoria, Producto, Region, Comuna, Direccion, Telefono, UnidadMedida, Carrito, ItemCarrito, Pedido, DetallePedido, EstadoPedido, MetodoPago, Pago, Perfil
 from django.contrib.auth import login
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .forms import ClienteCreationForm, DatosUsuarioForm, EmailLoginForm, TrabajadorCreationForm, ProductoForm
 from django.contrib.auth.decorators import login_required
@@ -27,6 +27,8 @@ def redirect_post_login(request):
         return redirect('dashboard_vendedor')
     elif user.groups.filter(name='Administrador').exists():
         return redirect('dashboard_admin')  
+    elif user.groups.filter(name='Contador').exists():
+        return redirect('dashboard_contador')  
     elif user.groups.filter(name='Cliente').exists():
         return redirect('home')  # O la página de productos
     else:
@@ -53,8 +55,10 @@ def signup(request):
         form = ClienteCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)  # inicia sesión después del registro
-            return redirect('login')  # ajusta esta ruta según tu app
+            grupo_cliente = Group.objects.get(name='Cliente')
+            user.groups.add(grupo_cliente)
+            login(request, user)  
+            return redirect('login') 
     else:
         form = ClienteCreationForm()
     return render(request, 'registro/signup.html', {'form': form})
@@ -79,6 +83,8 @@ def home(request):
     
     return render(request, 'home.html', context)
 
+def acceso_denegado(request):
+    return render(request, 'acceso_denegado.html', status=403)
 
 def about(request):
     return render(request, 'core/about.html')
@@ -109,8 +115,11 @@ def myaccount(request):
 #lógica y CRUD del carrito 
 
 def agregar_al_carrito(request, producto_id):
+    print("POST data:", request.POST)
+
     producto = get_object_or_404(Producto, pk=producto_id)
     cantidad = int(request.POST.get('cantidad', 1))
+
     
     if cantidad > producto.stock:
         return render(request, 'error_stock.html', {'mensaje': 'No hay suficiente stock disponible.'})
@@ -390,25 +399,30 @@ def validar_stock(items):
 def confirmar_pedido(request):
     usuario = request.user
     carrito = Carrito.objects.filter(usuario=usuario).first()
-    items = ItemCarrito.objects.filter(carrito=carrito)
+    items_qs = ItemCarrito.objects.filter(carrito=carrito)
 
-    if not carrito or not items.exists():
-        return redirect('carrito')  # Si no hay productos, redirige al carrito
-    
-    items = ItemCarrito.objects.filter(carrito=carrito)
-
-    if not items.exists():
+    if not carrito or not items_qs.exists():
         return redirect('carrito')
-    errores = validar_stock(items)
+
+    errores = validar_stock(items_qs)
     if errores:
         for error in errores:
             messages.error(request, error)
         return redirect('carrito')
 
-    total = sum(item.producto.precio_venta * item.cantidad for item in items)
+    items = []
+    total = 0
+    for it in items_qs.select_related('producto'):
+        subtotal = it.producto.precio_venta * it.cantidad
+        items.append({
+            'producto':  it.producto,
+            'cantidad':  it.cantidad,
+            'subtotal':  subtotal,
+        })
+        total += subtotal
 
     return render(request, 'pedido/confirmar_pedido.html', {
-        'items': items,
+        'items': items,  
         'total': total,
     })
 
@@ -422,7 +436,6 @@ def elegir_metodo_pago(request):
     return render(request, 'pedido/elegir_metodo_pago.html')
 
 # integración con API de PayPal
-@grupo_requerido('Cliente')
 def obtener_token_paypal():
     url = f"{settings.PAYPAL_API_BASE}/v1/oauth2/token"
     headers = {
@@ -447,7 +460,6 @@ def obtener_token_paypal():
         return None
 
 
-@grupo_requerido('Cliente')
 def crear_pago(access_token, total_amount, currency='USD',
                return_url='http://localhost:8000/confirmar_pago/',
                cancel_url='http://localhost:8000/cancelar_pago/', direccion=None):
@@ -505,7 +517,6 @@ def crear_pago(access_token, total_amount, currency='USD',
     return data.get("id"), approval_url
 
 
-@grupo_requerido('Cliente')
 def procesar_pago_paypal(request):
     direccion = Direccion.objects.filter(usuario=request.user).first()
     usuario = request.user
@@ -550,7 +561,6 @@ def procesar_pago_paypal(request):
 
     return redirect(approval_url)
 
-@grupo_requerido('Cliente')
 def confirmar_pago(request):
     order_id = request.GET.get('token')
     access_token = obtener_token_paypal()
@@ -807,3 +817,17 @@ def eliminar_producto(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
     producto.delete()
     return redirect('gestion_productos')
+
+#logica contador
+
+@grupo_requerido('Contador')
+def dashboard_contador(request):
+    return render(request, 'pedido/contador/dashboard.html')
+
+@grupo_requerido('Contador')
+def listar_pagos(request):
+    pagos = Pago.objects.select_related('metodo_pago').all().order_by('-fecha_pago')
+    context = {
+        'pagos': pagos,
+    }
+    return render(request, 'pedido/contador/pagos.html', context)
