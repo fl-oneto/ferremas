@@ -1,0 +1,54 @@
+{% extends 'base.html' %} 
+{% load filtros_personalizados %} 
+{% block title %}Pagos registrados{% endblock %} 
+
+{% block content %}
+<div class="container my-5" style="max-width: 960px">
+  <!-- Botón volver -->
+
+  <!-- Tarjeta principal -->
+  <div class="card shadow-sm border-0">
+    <!-- Cabecera -->
+
+    <h2 class="mb-4">Pagos Registrados</h2>
+
+    <div class="mb-3">
+      <a href="{% url 'dashboard_contador' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left-circle"></i> Volver al dashboard
+      </a>
+    </div>
+    <!-- Cuerpo -->
+    <div class="card-body p-0">
+      {% if pagos %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>ID Pago</th>
+              <th>Método</th>
+              <th class="text-end">Monto</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pago in pagos %}
+            <tr>
+              <td>{{ pago.id }}</td>
+              <td>{{ pago.metodo_pago.nombre }}</td>
+              <td class="text-end">${{ pago.pedido.total|formatear_pesos }}</td>
+              <td>{{ pago.fecha_pago|date:"d M Y · H:i" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="p-4 text-center text-muted">
+        <i class="bi bi-exclamation-circle me-1"></i>
+        No hay pagos registrados.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

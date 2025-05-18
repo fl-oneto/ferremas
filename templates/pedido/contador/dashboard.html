@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filtros_personalizados %}
+
+{% block title %}
+    Dashboard Contador
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Bienvenido, {{ request.user.nombre|default:request.user.email }} 💼</h2>
+
+    <hr>
+
+    <div class="container-fluid">
+        <!-- Aquí puedes añadir gráficos o datos resumidos -->
+        <div
+            id="resumen"
+            style="height: 400px;">
+            <!-- Por ahora vacío, luego puedes usar gráficos o indicadores -->
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Pagos Registrados</h5>
+                    <p class="card-text">Revisa y administra todos los pagos realizados.</p>
+                    <a href="{% url 'listar_pagos' %}" class="btn btn-primary">Ver pagos</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Reportes Financieros</h5>
+                    <p class="card-text">Próximamente podrás generar reportes detallados.</p>
+                    <a href="#" class="btn btn-secondary disabled">Ir a reportes</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

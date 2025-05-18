@@ -2,91 +2,227 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2>{{ titulo|default:"Editar perfil" }}</h2>  
-    <form method="post" id="datosUsuarioForm">
-    {% csrf_token %}
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        {{ form.nombre.label_tag }} {{ form.nombre }}
-      </div>
-      <div class="col-md-6 mb-3">
-        {{ form.primer_apellido.label_tag }} {{ form.primer_apellido }}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <a href="{% url 'myaccount' %}" class="btn btn-outline-secondary mb-4 d-inline-flex align-items-center">
+        <i class="bi bi-arrow-left-circle me-2"></i> Volver a mi cuenta
+      </a>
+      
+      <div class="card border-0 shadow rounded-3">
+        <div class="card-header bg-primary bg-gradient text-white py-3">
+          <h2 class="card-title h4 mb-0 fw-bold">{{ titulo|default:"Editar perfil" }}</h2>
+        </div>
+        
+        <div class="card-body p-4">
+          {# Mensajes flash con animación mejorada #}
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-start border-5 border-{{ message.tags }}" role="alert">
+            <div class="d-flex align-items-center">
+              {% if message.tags == 'success' %}
+                <i class="bi bi-check-circle-fill me-2 fs-4"></i>
+              {% elif message.tags == 'danger' or message.tags == 'error' %}
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
+              {% elif message.tags == 'warning' %}
+                <i class="bi bi-exclamation-circle-fill me-2 fs-4"></i>
+              {% elif message.tags == 'info' %}
+                <i class="bi bi-info-circle-fill me-2 fs-4"></i>
+              {% endif %}
+              <div>{{ message }}</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          {% endfor %}
+          
+          <form method="post" id="datosUsuarioForm" novalidate>
+            {% csrf_token %}
+            
+            <!-- ───────────── Datos personales ───────────── -->
+            <div class="card mb-4 border-0 bg-light rounded-3">
+              <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                  <i class="bi bi-person-fill text-primary fs-4 me-2"></i>
+                  <h5 class="fw-bold mb-0">Datos personales</h5>
+                </div>
+                <hr class="mt-1 mb-4">
+                
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                      {{ form.nombre }}
+                      {{ form.nombre.label_tag }}
+                      {% if form.nombre.errors %}
+                      <div class="invalid-feedback d-block">
+                        {% for error in form.nombre.errors %}{{ error }}{% endfor %}
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                      {{ form.primer_apellido }}
+                      {{ form.primer_apellido.label_tag }}
+                      {% if form.primer_apellido.errors %}
+                      <div class="invalid-feedback d-block">
+                        {% for error in form.primer_apellido.errors %}{{ error }}{% endfor %}
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                      {{ form.segundo_apellido }}
+                      {{ form.segundo_apellido.label_tag }}
+                      {% if form.segundo_apellido.errors %}
+                      <div class="invalid-feedback d-block">
+                        {% for error in form.segundo_apellido.errors %}{{ error }}{% endfor %}
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                      {{ form.telefono }}
+                      {{ form.telefono.label_tag }}
+                      {% if form.telefono.errors %}
+                      <div class="invalid-feedback d-block">
+                        {% for error in form.telefono.errors %}{{ error }}{% endfor %}
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- ───────────── Dirección ───────────── -->
+            <div class="card border-0 bg-light rounded-3">
+              <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                  <i class="bi bi-geo-alt-fill text-primary fs-4 me-2"></i>
+                  <h5 class="fw-bold mb-0">Dirección</h5>
+                </div>
+                <hr class="mt-1 mb-4">
+                
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                      {{ form.region }}
+                      {{ form.region.label_tag }}
+                      {% if form.region.errors %}
+                      <div class="invalid-feedback d-block">
+                        {% for error in form.region.errors %}{{ error }}{% endfor %}
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                      {{ form.comuna }}
+                      {{ form.comuna.label_tag }}
+                      {% if form.comuna.errors %}
+                      <div class="invalid-feedback d-block">
+                        {% for error in form.comuna.errors %}{{ error }}{% endfor %}
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                      {{ form.calle }}
+                      {{ form.calle.label_tag }}
+                      {% if form.calle.errors %}
+                      <div class="invalid-feedback d-block">
+                        {% for error in form.calle.errors %}{{ error }}{% endfor %}
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                      {{ form.numero }}
+                      {{ form.numero.label_tag }}
+                      {% if form.numero.errors %}
+                      <div class="invalid-feedback d-block">
+                        {% for error in form.numero.errors %}{{ error }}{% endfor %}
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {# Errores generales del formulario #}
+            {% if form.non_field_errors or form.errors %}
+            <div class="alert alert-danger mt-4 shadow-sm border-start border-5 border-danger">
+              <div class="d-flex">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
+                <div>
+                  <h6 class="fw-bold mb-1">Por favor corrige los siguientes errores:</h6>
+                  <ul class="mb-0 ps-3">
+                    {% for field in form %}
+                      {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                      {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                      <li>{{ error }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            
+            <div class="d-flex justify-content-end mt-4">
+              <button type="submit" class="btn btn-primary btn-lg px-5 py-2 shadow-sm">
+                <i class="bi bi-save me-2"></i> {{ texto_boton|default:"Guardar cambios" }}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
-
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        {{ form.segundo_apellido.label_tag }} {{ form.segundo_apellido}}
-      </div>
-      <div class="col-md-6 mb-3">
-      <div class="col-md-6 mb-3">
-        {{ form.telefono.label_tag }} {{ form.telefono }}
-      </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-6 mb-3">
-          {{ form.region.label_tag }} {{ form.region }}
-        </div>
-        <div class="col-md-6 mb-3">
-          {{ form.comuna.label_tag }} {{ form.comuna }}
-        </div>
-      </div>
-
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        {{ form.calle.label_tag }} {{ form.calle }}
-      </div>
-      <div class="col-md-6 mb-3">
-        {{ form.numero.label_tag }} {{ form.numero }}
-      </div>
-    </div>
-
-    {% if form.errors %}
-        <div class="alert alert-danger">
-            <ul>
-            {% for field in form %}
-                {% for error in field.errors %}
-                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-                {% endfor %}
-            {% endfor %}
-            {% for error in form.non_field_errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-            </ul>
-        </div>
-    {% endif %}
-
-
-    <button type="submit" class="btn btn-primary">{{ texto_boton }}</button>
-  </form>
+  </div>
 </div>
 
+<!-- jQuery + AJAX para cargar comunas con mejoras visuales-->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-  // Actualiza comunas según la región seleccionada
-  $('#id_region').change(function () {
-    const regionId = $(this).val();
-
-    if (regionId) {
-      $.ajax({
-        url: '{% url "cargar_comunas" %}',
-        data: {
-          'region': regionId
-        },
-        success: function (data) {
-          const comunaSelect = $('#id_comuna');
-          comunaSelect.empty();
-          comunaSelect.append('<option value="">Seleccione una comuna</option>');
-          data.forEach(function (comuna) {
-            comunaSelect.append(`<option value="${comuna.id}">${comuna.nombre}</option>`);
+  $(document).ready(function() {
+    // Añadir clases de Bootstrap a los elementos del formulario
+    $('input, select').addClass('form-control');
+    
+    // Gestionar el cambio de región y cargar comunas
+    $('#id_region').on('change', function () {
+      const regionId = $(this).val();
+      const $comuna = $('#id_comuna');
+      
+      if (regionId) {
+        // Mostrar indicador de carga
+        $comuna.html('<option>Cargando comunas...</option>').prop('disabled', true);
+        
+        $.getJSON('{% url "cargar_comunas" %}', { region: regionId })
+          .done(data => {
+            $comuna.empty().prop('disabled', false);
+            $comuna.append('<option value="">Seleccione una comuna</option>');
+            data.forEach(c => $comuna.append(`<option value="${c.id}">${c.nombre}</option>`));
+          })
+          .fail(() => {
+            $comuna.html('<option value="">Error al cargar comunas</option>');
           });
-        }
-      });
-    } else {
-      $('#id_comuna').empty();
-    }
+      } else {
+        $comuna.html('<option value="">Primero seleccione una región</option>');
+      }
+    });
+    
+    // Si hay errores, marcar los campos correspondientes
+    {% if form.errors %}
+      {% for field_name, errors in form.errors.items %}
+        $('#id_{{ field_name }}').addClass('is-invalid');
+      {% endfor %}
+    {% endif %}
   });
 </script>
 {% endblock %}

@@ -44,7 +44,13 @@
                     <td class="d-none d-sm-table-cell">
                       <form method="post" action="{% url 'eliminar_del_carrito' item.producto.id %}">
                         {% csrf_token %}
-                        <button type="submit">Eliminar</button>
+                        <button type="submit"
+                                class="btn btn-link p-0"
+                                title="Eliminar">
+                          <svg width="20" height="20" class="text-danger">
+                            <use xlink:href="#icon-x-circle"></use>
+                          </svg>
+                        </button>
                       </form>
                     </td>
                   </tr>
