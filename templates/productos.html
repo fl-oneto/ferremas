@@ -1,27 +1,31 @@
 {% extends 'base.html' %}
 {% load filtros_personalizados %}
-
 {% block content %}
-  <div class="container">
-    <h2>Productos en {{ categoria.nombre }}</h2>
+<div class="container">
+  <h2>Productos en {{ categoria.nombre }}</h2>
 
-    {% if productos %}
-      <div class="row">
-        {% for producto in productos %}
-          <div class="col-md-4">
-            <div class="card mb-4">
-              <img src="{{ producto.imagen.url }}" class="card-img-top" alt="{{ producto.nombre }}" style="height: 200px; width: 200px; object-fit: cover;">
-              <div class="card-body">
-                <h5 class="card-title">{{ producto.nombre }}</h5>
-                <p class="card-text">${{ producto.precio_venta|formatear_pesos}}</p>
-                <!-- botón para ver detalle o agregar al carrito -->
-              </div>
-            </div>
-          </div>
-        {% endfor %}
+  {% if productos %}
+  <div class="row">
+    {% for producto in productos %}
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <img
+          src="{{ producto.imagen.url }}"
+          class="card-img-top"
+          alt="{{ producto.nombre }}"
+          style="height: 200px; width: 200px; object-fit: cover"
+        />
+        <div class="card-body">
+          <h5 class="card-title">{{ producto.nombre }}</h5>
+          <p class="card-text">${{ producto.precio_venta|formatear_pesos}}</p>
+          <!-- botón para ver detalle o agregar al carrito -->
+        </div>
       </div>
-    {% else %}
-      <p>No hay productos en esta categoría.</p>
-    {% endif %}
+    </div>
+    {% endfor %}
   </div>
+  {% else %}
+  <p>No hay productos en esta categoría.</p>
+  {% endif %}
+</div>
 {% endblock %}

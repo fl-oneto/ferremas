@@ -14,6 +14,8 @@ from .utils import clp_a_usd
 from .decorators import grupo_requerido
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib import messages
+from datetime import date, timedelta
+from django.db.models import Sum
 
 
 
@@ -705,13 +707,47 @@ def despachar_pedido(request, pedido_id):
 
 @grupo_requerido('Vendedor')
 def dashboard_vendedor(request):
-    
-    pedidos_pendientes = Pedido.objects.filter(estado='2').count()
+    pedidos_pendientes  = Pedido.objects.filter(estado='2').count()
     pedidos_despachados = Pedido.objects.filter(estado='5').count()
+
+    today      = date.today()
+    yesterday  = today - timedelta(days=1)
+    day_before = today - timedelta(days=2)
+
+    total_today = (Pedido.objects
+                   .filter(fecha=today)
+                   .aggregate(total=Sum('total'))['total'] or 0)
+
+    total_yesterday = (Pedido.objects
+                       .filter(fecha=yesterday)
+                       .aggregate(total=Sum('total'))['total'] or 0)
+
+    total_before = (Pedido.objects
+                    .filter(fecha=day_before)
+                    .aggregate(total=Sum('total'))['total'] or 0)
+
+
     context = {
-        'pedidos_pendientes': pedidos_pendientes,
+        'pedidos_pendientes':  pedidos_pendientes,
         'pedidos_despachados': pedidos_despachados,
+
+
+        'labels': [
+            day_before.strftime('%a %d %b'),   # p. ej. "Fri 16 May"
+            yesterday.strftime('%a %d %b'),
+            today.strftime('%a %d %b')
+        ],
+        'amounts': [
+            total_before,
+            total_yesterday,
+            total_today
+        ],
+
+        'money_two_days_ago': total_before,
+        'money_yesterday':    total_yesterday,
+        'money_today':        total_today,
     }
+
     return render(request, 'pedido/vendedor/dashboard.html', context)
 
 
@@ -719,7 +755,52 @@ def dashboard_vendedor(request):
 
 @grupo_requerido('Administrador')
 def dashboard_admin(request):
-    return render(request, 'panel_admin/dashboard.html')
+    pedidos_pendientes   = Pedido.objects.filter(estado='2').count()
+    pedidos_despachados  = Pedido.objects.filter(estado='5').count()
+    pedidos_preparacion  = Pedido.objects.filter(estado='3').count()
+    pedidos_listos       = Pedido.objects.filter(estado='4').count()
+
+    today       = date.today()
+    yesterday   = today - timedelta(days=1)
+    day_before  = today - timedelta(days=2)
+
+    total_today = (Pedido.objects
+                   .filter(fecha=today)
+                   .aggregate(total=Sum('total'))['total'] or 0)
+
+    total_yesterday = (Pedido.objects
+                       .filter(fecha=yesterday)
+                       .aggregate(total=Sum('total'))['total'] or 0)
+
+    total_before = (Pedido.objects
+                    .filter(fecha=day_before)
+                    .aggregate(total=Sum('total'))['total'] or 0)
+
+    context = {
+        'pedidos_pendientes':  pedidos_pendientes,
+        'pedidos_despachados': pedidos_despachados,
+
+        'pedidos_preparacion': pedidos_preparacion,
+        'pedidos_listos':      pedidos_listos,
+
+
+        'labels': [
+            day_before.strftime('%a %d %b'),
+            yesterday.strftime('%a %d %b'),
+            today.strftime('%a %d %b')
+        ],
+        'amounts': [
+            total_before,
+            total_yesterday,
+            total_today
+        ],
+
+        'money_two_days_ago': total_before,
+        'money_yesterday':    total_yesterday,
+        'money_today':        total_today,
+    }
+
+    return render(request, 'panel_admin/dashboard.html', context)
 
 # gestión usuarios
 @grupo_requerido('Administrador')
