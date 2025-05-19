@@ -49,7 +49,7 @@ class EmailLoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput(attrs={
         'class': 'form-control',
         'placeholder': 'Introduce tu contraseña'
-    }))
+    }),)
 
     def clean(self):
         email = self.cleaned_data.get('email')
@@ -73,7 +73,7 @@ class DatosUsuarioForm(forms.Form):
     nombre = forms.CharField(max_length=150, required=True, label='Nombre')
     primer_apellido = forms.CharField(max_length=150, required=True, label='Primer apellido')
     segundo_apellido = forms.CharField(max_length=150, required=False, label='Segundo apellido')
-    telefono = forms.CharField(max_length=20, required=True, label='Teléfono')
+    telefono = forms.CharField(max_length=9, required=True, label='Teléfono')
     calle = forms.CharField(max_length=255, required=True, label='Calle')
     numero = forms.CharField(max_length=20, required=True, label='Número')
     region = forms.ModelChoiceField(

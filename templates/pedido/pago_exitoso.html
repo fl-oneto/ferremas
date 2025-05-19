@@ -2,7 +2,7 @@
 {% load filtros_personalizados %}
 
 {% block content %}
-<div class="container py-5 d-flex justify-content-center">
+<div class="container py-5 d-flex justify-content-center" id="reporte-pdf">
   <div class="card shadow-lg rounded-4 p-4" style="max-width: 600px; width: 100%;">
     <div class="text-center mb-4">
       <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="text-success mb-3" viewBox="0 0 16 16">
@@ -35,5 +35,12 @@
       <a href="{% url 'home' %}" class="btn btn-outline-primary">Volver al inicio</a>
     </div>
   </div>
+  
+</div> 
+<div class="text-center my-3"> 
+<button id="btn-descargar"
+            class="btn btn-primary" >
+            Descargar como PDF
+  </button>
 </div>
 {% endblock %}

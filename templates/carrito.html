@@ -67,10 +67,11 @@
             <p>Tu carrito está vacío.</p>
           {% endif %}
         </div>
-
+         
         <!-- Columna para el resumen -->
         <div class="col-md-3 bg-body-tertiary">
           <div class="p-3">
+            {% comment %} 
             <h4>Costo Estimado De Envío</h4>
             Región<select class="form-select" aria-label="Region" id="region-select">
               <option selected>Seleccione su Región</option>
@@ -88,6 +89,7 @@
           <div class="p-3">
             <button type="button" class="btn btn-secondary w-100">Calcular Envío</button>
           </div>
+          {% endcomment %}
           <div class="p-3">
             <h4 class="text-center">Total a Pagar:</h4>
             <h5 class="precios text-center">{{ total|formatear_pesos }}</h5>
