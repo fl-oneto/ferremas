@@ -4,8 +4,19 @@
 
 {% block content %}
 <div class="container my-4">
+    <div id="reporte-pdf">
     <h2 class="mb-4">Pedidos Listos para Despacho</h2>
-
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <a href="{% url 'dashboard_bodeguero' %}"
+            class="btn btn-secondary">
+            <i class="bi bi-arrow-left-circle"></i>
+            Volver a la lista
+        </a>
+        <button id="btn-descargar"
+                class="btn btn-primary">
+            Descargar como PDF
+        </button>
+    </div>
     {% if messages %}
     <div class="container mt-3">
         {% for message in messages %}
@@ -46,6 +57,7 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
     </div>
 </div>
 {% endblock %}
