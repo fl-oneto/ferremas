@@ -12,12 +12,24 @@
 
     <hr>
 
-    <div class="container-fluid">
-        <!-- Aquí puedes añadir gráficos o datos resumidos -->
-        <div
-            id="resumen"
-            style="height: 400px;">
-            <!-- Por ahora vacío, luego puedes usar gráficos o indicadores -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="m-0">Bienvenido, {{ request.user.perfil.nombre }}</h2>
+
+        <button id="btn-descargar"
+            class="btn btn-primary">
+            Descargar como PDF
+        </button>
+    </div>
+    
+    <div id="reporte-pdf">
+        <div class="container-fluid my-4">
+                <div
+                    id="ventas"
+                    data-before="{{ money_two_days_ago }}"
+                    data-yesterday="{{ money_yesterday }}"
+                    data-today="{{ money_today }}"
+                    style="height: 400px"
+                ></div>
         </div>
     </div>
 
