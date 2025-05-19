@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ titulo }}{% endblock %} 
+{% block content %}
+<div class="container my-4">
+    <h2 class="mb-4">{{ titulo }}</h2>
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% for campo in form %}
+            <div class="mb-3">
+                {{ campo.label_tag }}
+                {{ campo }}
+                {% if campo.help_text %}
+                    <small class="form-text text-muted">{{ campo.help_text }}</small>
+                {% endif %}
+                {% for error in campo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">{{ texto_boton|default:"Guardar" }}</button>
+        <a href="{{ url_volver }}" class="btn btn-secondary">Volver</a>
+    </form>
+</div>
+
+{% endblock %}

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'tienda',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -149,3 +150,9 @@ PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com"
 
 EXCHANGERATE_API_KEY = "a98ecd8610b4b4ce34553b9e071c1da2"
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'ferremas.tienda@gmail.com'
+EMAIL_HOST_PASSWORD = 'sbfs wygo nkdy xznn'

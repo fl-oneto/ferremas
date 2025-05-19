@@ -6,7 +6,6 @@
     Dashboard Administrador
 {% endblock %}
 
-
 {% block content %}
 <div class="container mt-5">
     <h2>Bienvenido, {{ request.user.perfil.nombre }} </h2>
@@ -14,7 +13,8 @@
     <hr>
 
     <div class="row">
-        <div class="col-md-6">
+
+        <div class="col-md-4">
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Gestionar usuarios</h5>
@@ -24,7 +24,7 @@
             </div>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Gestionar productos</h5>
@@ -34,7 +34,16 @@
             </div>
         </div>
 
-        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Gestionar categorías</h5>
+                    <p class="card-text">Ver y editar categorías de productos.</p>
+                    <a href="{% url 'gestion_categorias' %}" class="btn btn-success">Ver categorías</a>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 {% endblock %}
