@@ -156,3 +156,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'ferremas.tienda@gmail.com'
 EMAIL_HOST_PASSWORD = 'sbfs wygo nkdy xznn'
+
+AUTH_PASSWORD_CHANGE_TEMPLATE = 'registro/password_change_form.html'
+AUTH_PASSWORD_CHANGE_DONE_TEMPLATE = 'registro/password_change_done.html'

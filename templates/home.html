@@ -408,36 +408,6 @@
       </div>
     </div>
   </section>
-
-  <script>
-document.addEventListener('DOMContentLoaded', () => {
-
-  document.querySelectorAll('.product-item').forEach(card => {
-    const minusBtn = card.querySelector('.quantity-left-minus');
-    const plusBtn  = card.querySelector('.quantity-right-plus');
-    const input    = card.querySelector('.qty-input');
-    const form     = card.querySelector('.add-to-cart-form');
-    const hidden   = form.querySelector('input[name="cantidad"]');
-
-    minusBtn.addEventListener('click', () => {
-      let val = parseInt(input.value) || 1;
-      if (val > 1) { val--; input.value = val; hidden.value = val; }
-    });
-
-    plusBtn.addEventListener('click', () => {
-      let val = parseInt(input.value) || 1;
-      val++; input.value = val; hidden.value = val;
-    });
-
-    input.addEventListener('input', () => {
-      let val = parseInt(input.value);
-      if (!val || val < 1) val = 1;
-      input.value = val;
-      hidden.value = val;
-    });
-  });
-
-});
-</script>
+  
 
 {% endblock %}

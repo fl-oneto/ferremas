@@ -24,9 +24,13 @@
           {% endif %}
         
           <a href="{% url 'editar_perfil' %}" class="btn btn-sm btn-outline-primary">Editar Datos</a>
+          <a href="{% url 'password_change' %}"  class="btn btn-sm btn-outline-primary w-100 my-2">
+          Cambiar contraseña
+      </a>
         </div>
         
       </div>
+      
 
       <form method="POST" action="{% url 'logout' %}">
         {% csrf_token %}
@@ -42,7 +46,7 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>Id</th>
                   <th>Fecha</th>
                   <th>Total</th>
                   <th>Estado</th>

@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
-from django.contrib.auth import views as auth_views
+from django.contrib.auth import views as auth_views 
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
+from django.urls import path, reverse_lazy
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -13,7 +15,7 @@ urlpatterns = [
     path('myaccount/', views.myaccount, name='myaccount'),
     path('editar_perfil/', views.editar_perfil, name='editar_perfil'),
     
-    # -- urls recuperación de contraseña --
+    # -- urls recuperación y cambio de contraseña --
     path(
         "password-reset/",
         auth_views.PasswordResetView.as_view(
@@ -45,6 +47,21 @@ urlpatterns = [
             template_name="registro/password_reset_complete.html"
         ),
         name="password_reset_complete",
+    ),
+    path(
+        "password/change/",
+        PasswordChangeView.as_view(
+            template_name="registro/password_change_form.html",
+            success_url=reverse_lazy("password_change_done")
+        ),
+        name="password_change",
+    ),
+    path(
+        "password/change/done/",
+        PasswordChangeDoneView.as_view(
+            template_name="registro/password_change_done.html",
+        ),
+        name="password_change_done",
     ),
     
     # -- urls de carrito --
