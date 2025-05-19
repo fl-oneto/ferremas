@@ -1,5 +1,5 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'base.html' %} 
+{% load static %} 
 {% load filtros_personalizados %}
 
 {% block title %}
@@ -8,7 +8,8 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Bienvenido, {{ request.user.perfil.nombre }} </h2>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="m-0">Bienvenido, {{ request.user.perfil.nombre }}</h2>
 
     <hr>
 
@@ -44,6 +45,71 @@
             </div>
         </div>
 
+        <button id="btn-descargar"
+            class="btn btn-primary">
+            Descargar como PDF
+        </button>
     </div>
+
+  <hr />
+
+  <div id="reporte-pdf">
+    <div class="container-fluid my-4">
+      <div class="row g-4">
+        <div class="col-12 col-lg-6">
+          <div
+            id="vendedor"
+            data-pendientes="{{ pedidos_pendientes }}"
+            data-despachados="{{ pedidos_despachados }}"
+            style="height: 400px"
+          ></div>
+        </div>
+        <div class="col-12 col-lg-6">
+          <div
+            id="pedidos"
+            data-en-preparacion="{{ pedidos_preparacion }}"
+            data-listos="{{ pedidos_listos }}"
+            style="height: 400px"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div
+        id="ventas"
+        data-before="{{ money_two_days_ago }}"
+        data-yesterday="{{ money_yesterday }}"
+        data-today="{{ money_today }}"
+        style="height: 400px"
+      ></div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Gestionar usuarios</h5>
+          <p class="card-text">Ver todos los usuarios.</p>
+          <a href="{% url 'gestion_usuarios' %}" class="btn btn-primary"
+            >Ver usuarios</a
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Gestionar productos</h5>
+          <p class="card-text">Ver todos los productos disponibles.</p>
+          <a href="{% url 'gestion_productos' %}" class="btn btn-warning"
+            >Ver productos</a
+          >
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
