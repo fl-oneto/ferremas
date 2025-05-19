@@ -8,7 +8,11 @@ import uuid
 
 class ClienteCreationForm(UserCreationForm):
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Introduce tu correo electrónico'}))
-    password1 = forms.CharField( label="Contraseña", widget=forms.PasswordInput(attrs={'class': 'form-control','placeholder': 'Introduce tu contraseña'}))
+    password1 = forms.CharField( label="Contraseña", 
+                                 widget=forms.PasswordInput(attrs={'class': 'form-control','placeholder': 'Introduce tu contraseña'}),
+                                 min_length=8,
+                                 error_messages={'min_length': 'La contraseña debe tener al menos 8 caracteres.'},
+                                 help_text='' )
     password2 = forms.CharField(label="Confirma tu contraseña", widget=forms.PasswordInput(attrs={'class': 'form-control','placeholder': 'Confirma tu contraseña'}))
     class Meta:
         model = User
@@ -24,6 +28,8 @@ class ClienteCreationForm(UserCreationForm):
         cleaned_data = super().clean()
         password1 = cleaned_data.get('password1')
         password2 = cleaned_data.get('password2')
+        if password1 and len(password1) < 8:
+            raise forms.ValidationError('password1', 'La contraseña debe tener al menos 8 caracteres.')
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError('Las contraseñas no coinciden.')
 
@@ -116,11 +122,6 @@ class CustomUserChangeForm(UserChangeForm):
         self.fields['groups'].label = "Rol"
 
 class ProductoForm(forms.ModelForm):
-    nueva_categoria = forms.CharField(
-        required=False,
-        label="Nueva categoría",
-        widget=forms.TextInput(attrs={'class': 'form-control'})
-    )
 
     class Meta:
         model = Producto
@@ -137,5 +138,15 @@ class ProductoForm(forms.ModelForm):
             'precio_compra': forms.NumberInput(attrs={'class': 'form-control'}),
             'categoria': forms.Select(attrs={'class': 'form-select', 'id': 'id_categoria'}),
             'unidad_medida': forms.Select(attrs={'class': 'form-select'}),
+            'imagen': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
+        
+class CategoriaForm(forms.ModelForm):
+    class Meta:
+        model = Categoria
+        fields = ['nombre', 'descripcion', 'imagen']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'imagen': forms.ClearableFileInput(attrs={'class': 'form-control'}),
         }

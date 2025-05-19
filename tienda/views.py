@@ -6,7 +6,7 @@ from .models import Categoria, Producto, Region, Comuna, Direccion, Telefono, Un
 from django.contrib.auth import login
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .forms import ClienteCreationForm, DatosUsuarioForm, EmailLoginForm, TrabajadorCreationForm, ProductoForm
+from .forms import ClienteCreationForm, DatosUsuarioForm, EmailLoginForm, TrabajadorCreationForm, ProductoForm, CategoriaForm
 from django.contrib.auth.decorators import login_required
 import requests
 from django.conf import settings
@@ -853,6 +853,65 @@ def eliminar_usuario(request, usuario_id):
     usuario.delete()
     return redirect('gestion_usuarios')
 
+#crud categorias gestion admin
+@grupo_requerido('Administrador')
+def gestion_categorias(request):
+    categorias = Categoria.objects.all()
+    return render(request, 'panel_admin/gestion_categorias.html', {'categorias': categorias})
+
+@grupo_requerido('Administrador')
+def crear_categoria(request):
+    if request.method == 'POST':
+        form = CategoriaForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Categoría creada correctamente.')
+            return redirect('gestion_categorias')
+        else:
+            messages.error(request, 'Por favor corrige los errores en el formulario.')
+    else:
+        form = CategoriaForm()
+
+    contexto = {
+        'form': form,
+        'titulo': 'Agregar Categoría',
+        'texto_boton': 'Crear Categoría',
+        'url_volver': reverse('gestion_categorias'),
+    }
+    return render(request, 'panel_admin/form_gestion.html', contexto)
+
+@grupo_requerido('Administrador')
+def editar_categoria(request, categoria_id):
+    categoria = get_object_or_404(Categoria, id=categoria_id)
+    if request.method == 'POST':
+        form = CategoriaForm(request.POST, request.FILES, instance=categoria)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Categoría actualizada correctamente.')
+            return redirect('gestion_categorias')
+        else:
+            messages.error(request, 'Por favor corrige los errores en el formulario.')
+    else:
+        form = CategoriaForm(instance=categoria)
+
+    contexto = {
+        'form': form,
+        'titulo': 'Editar Categoría',
+        'texto_boton': 'Actualizar Categoría',
+        "url_volver": reverse("gestion_categorias"),
+    }
+    return render(request, 'panel_admin/form_gestion.html', contexto)
+
+@grupo_requerido('Administrador')
+def eliminar_categoria(request, categoria_id):
+    categoria = get_object_or_404(Categoria, id=categoria_id)
+    if request.method == 'POST':
+        categoria.delete()
+        messages.success(request, 'Categoría eliminada correctamente.')
+        return redirect('gestion_categorias')
+    return render(request, 'panel_admin/confirmar_eliminacion_categoria.html', {'categoria': categoria})
+
+
 # crud productos gestion admin
 
 @grupo_requerido('Administrador')
@@ -863,27 +922,26 @@ def gestion_productos(request):
 @grupo_requerido('Administrador')
 def crear_producto(request):
     if request.method == 'POST':
-        print("POST recibido:", request.POST)
         form = ProductoForm(request.POST, request.FILES)
         if form.is_valid():
-            print("Formulario válido")
             producto = form.save(commit=False)
-            nueva_categoria = form.cleaned_data.get('nueva_categoria')
-            if nueva_categoria:
-                categoria, _ = Categoria.objects.get_or_create(nombre=nueva_categoria)
-                producto.categoria = categoria
-            else:
-                producto.categoria = form.cleaned_data['categoria']
+            producto.categoria = form.cleaned_data["categoria"]
             producto.save()
-            messages.success(request, f'Producto "{producto.nombre}" agregado correctamente.')
+            messages.success(request, f'Producto “{producto.nombre}” agregado correctamente.')
             return redirect('gestion_productos')
         else:
-            print("Formulario inválido:", form.errors)
             messages.error(request, 'Por favor corrige los errores en el formulario.')
-
     else:
         form = ProductoForm()
-    return render(request, 'panel_admin/form_producto.html', {'form': form})
+
+    contexto = {
+        'form': form,
+        'titulo': 'Agregar producto',
+        'texto_boton': 'Crear Producto',
+        'url_volver': reverse('gestion_productos'),
+    }
+    return render(request, 'panel_admin/form_gestion.html', contexto)
+
 
 @grupo_requerido('Administrador')
 def editar_producto(request, producto_id):
@@ -895,7 +953,13 @@ def editar_producto(request, producto_id):
             return redirect('gestion_productos')
     else:
         form = ProductoForm(instance=producto)
-    return render(request, 'panel_admin/form_producto.html', {'form': form})
+    contexto = {
+        'form': form,
+        'titulo': 'Editar producto',          
+        'texto_boton': 'Guardar cambios',     
+         "url_volver": reverse("gestion_productos"),
+    }
+    return render(request, 'panel_admin/form_gestion.html', contexto)
 
 @grupo_requerido('Administrador')
 def eliminar_producto(request, producto_id):
