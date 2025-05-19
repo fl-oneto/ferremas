@@ -3,20 +3,24 @@
 {% block title %}Pagos registrados{% endblock %} 
 
 {% block content %}
-<div class="container my-5" style="max-width: 960px">
+<div class="container mt-5">
   <!-- Botón volver -->
-
+  <div id="reporte-pdf">
   <!-- Tarjeta principal -->
   <div class="card shadow-sm border-0">
     <!-- Cabecera -->
-
     <h2 class="mb-4">Pagos Registrados</h2>
+      <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="mb-3">
+                <a href="{% url 'dashboard_contador' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left-circle"></i> Volver al Dashboard
+                </a>
+            </div>
+            <button id="btn-descargar" class="btn btn-primary">
+            Descargar como PDF
+            </button>
+      </div>
 
-    <div class="mb-3">
-      <a href="{% url 'dashboard_contador' %}" class="btn btn-secondary">
-        <i class="bi bi-arrow-left-circle"></i> Volver al dashboard
-      </a>
-    </div>
     <!-- Cuerpo -->
     <div class="card-body p-0">
       {% if pagos %}

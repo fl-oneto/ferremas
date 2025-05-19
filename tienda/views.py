@@ -971,7 +971,39 @@ def eliminar_producto(request, producto_id):
 
 @grupo_requerido('Contador')
 def dashboard_contador(request):
-    return render(request, 'pedido/contador/dashboard.html')
+    today       = date.today()
+    yesterday   = today - timedelta(days=1)
+    day_before  = today - timedelta(days=2)
+
+    total_today = (Pedido.objects
+                   .filter(fecha=today)
+                   .aggregate(total=Sum('total'))['total'] or 0)
+
+    total_yesterday = (Pedido.objects
+                       .filter(fecha=yesterday)
+                       .aggregate(total=Sum('total'))['total'] or 0)
+
+    total_before = (Pedido.objects
+                    .filter(fecha=day_before)
+                    .aggregate(total=Sum('total'))['total'] or 0)
+
+    context = {
+        'labels': [
+            day_before.strftime('%a %d %b'),
+            yesterday.strftime('%a %d %b'),
+            today.strftime('%a %d %b')
+        ],
+        'amounts': [
+            total_before,
+            total_yesterday,
+            total_today
+        ],
+
+        'money_two_days_ago': total_before,
+        'money_yesterday':    total_yesterday,
+        'money_today':        total_today,
+    }
+    return render(request, 'pedido/contador/dashboard.html', context)
 
 @grupo_requerido('Contador')
 def listar_pagos(request):
