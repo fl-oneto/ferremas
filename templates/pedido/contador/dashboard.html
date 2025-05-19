@@ -8,18 +8,18 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Bienvenido, {{ request.user.nombre|default:request.user.email }} 💼</h2>
-
-    <hr>
 
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h2 class="m-0">Bienvenido, {{ request.user.perfil.nombre }}</h2>
+        <h2 class="m-0">Bienvenido, {{ request.user.perfil.nombre|default:request.user.email }}</h2>
 
         <button id="btn-descargar"
             class="btn btn-primary">
             Descargar como PDF
         </button>
     </div>
+
+    <hr>
+
     
     <div id="reporte-pdf">
         <div class="container-fluid my-4">

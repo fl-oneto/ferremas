@@ -724,7 +724,7 @@ def despachar_pedido(request, pedido_id):
 @grupo_requerido('Vendedor')
 def dashboard_vendedor(request):
     pedidos_pendientes  = Pedido.objects.filter(estado='2').count()
-    pedidos_despachados = Pedido.objects.filter(estado='5').count()
+    pedidos_despachados = Pedido.objects.filter(estado='4').count()
 
     today      = date.today()
     yesterday  = today - timedelta(days=1)
