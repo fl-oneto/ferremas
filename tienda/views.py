@@ -6,7 +6,7 @@ from .models import Categoria, Producto, Region, Comuna, Direccion, Telefono, Un
 from django.contrib.auth import login
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .forms import ClienteCreationForm, DatosUsuarioForm, EmailLoginForm, TrabajadorCreationForm, ProductoForm, CategoriaForm
+from .forms import ClienteCreationForm, DatosUsuarioForm, EmailLoginForm, TrabajadorCreationForm, ProductoForm, CategoriaForm, TrabajadorEditForm
 from django.contrib.auth.decorators import login_required
 import requests
 from django.conf import settings
@@ -16,7 +16,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib import messages
 from datetime import date, timedelta
 from django.db.models import Sum
-
+from django.core.mail import send_mail
 
 
 
@@ -219,7 +219,6 @@ def eliminar_del_carrito(request, producto_id):
     
     return redirect('ver_carrito')
 
-
 def vaciar_carrito(request):
     if request.user.is_authenticated:
         carrito = Carrito.objects.filter(usuario=request.user).first()
@@ -365,6 +364,7 @@ def procesar_formulario_usuario(request, redireccion, titulo, boton):
                     'codigo_postal': None
                 }
             )
+            messages.success(request, 'Los datos del perfil se han guardado correctamente.')
 
             return redirect(redireccion)
     else:
@@ -625,6 +625,24 @@ def confirmar_pago(request):
         items.delete()
         carrito.delete()
         
+        try:
+            send_mail(
+                subject='Confirmación de compra - FERREMAS',
+                message=(
+                    f'Hola {usuario.perfil.nombre} {usuario.perfil.primer_apellido} {usuario.perfil.segundo_apellido},\n\n'
+                    'Gracias por tu compra en FERREMAS.\n'
+                    f'Monto pagado: {datos_pago["purchase_units"][0]["payments"]["captures"][0]["amount"]["value"]} '
+                    f'{datos_pago["purchase_units"][0]["payments"]["captures"][0]["amount"]["currency_code"]}\n\n'
+                    'Tu pedido está siendo procesado.\n\n'
+                    'Saludos,\nFERREMAS'
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[usuario.email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print(f"Error enviando correo de confirmación: {e}")
+        
         return render(request, 'pedido/pago_exitoso.html', {
             'monto': datos_pago['purchase_units'][0]['payments']['captures'][0]['amount']['value'],
             'moneda': datos_pago['purchase_units'][0]['payments']['captures'][0]['amount']['currency_code'],
@@ -665,6 +683,7 @@ def pedido_detalle(request, pedido_id):
         if accion == 'listo':
             estado_listo = EstadoPedido.objects.get(nombre="Listo para despacho")
             pedido.estado = estado_listo
+            messages.success(request, f"El pedido #{pedido.id} fue marcado como listo para despacho.")
         pedido.save()
         return redirect('pedidos_pendientes')
     return render(request, 'pedido/bodeguero/detalle_pedido.html', {'pedido': pedido})
@@ -695,9 +714,11 @@ def aprobar_rechazar_pedido(request, pedido_id):
         if accion == 'aprobar':
             estado_preparando = EstadoPedido.objects.get(nombre="En preparación")
             pedido.estado = estado_preparando
+            messages.success(request, f"El pedido #{pedido.id} ha sido aprobado y está en preparación.")
         elif accion == 'rechazar':
             estado_cancelado = EstadoPedido.objects.get(nombre="Cancelado")
             pedido.estado = estado_cancelado
+            messages.success(request, f"El pedido #{pedido.id} ha sido rechazado.")
         pedido.save()
         return redirect('pedidos_por_aprobar')
     return render(request, 'pedido/vendedor/detalle_pedido.html', {'pedido': pedido})
@@ -830,27 +851,44 @@ def crear_usuario(request):
         form = TrabajadorCreationForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, f'Usuario creado correctamente.')
             return redirect('gestion_usuarios')
+        else:
+            messages.error(request, 'Por favor corrige los errores en el formulario.')
     else:
         form = TrabajadorCreationForm()
-    return render(request, 'panel_admin/form_usuario.html', {'form': form})
+    return render(request, 'panel_admin/form_usuario.html', {
+        'form': form,
+        'titulo': 'Crear Usuario',
+        'texto_boton': 'Crear',
+        'url_volver': reverse('gestion_usuarios'),
+    })
 
 @grupo_requerido('Administrador')
 def editar_usuario(request, usuario_id):
     usuario = User.objects.get(id=usuario_id)
     if request.method == 'POST':
-        form = TrabajadorCreationForm(request.POST, instance=usuario)
+        form = TrabajadorEditForm(request.POST, instance=usuario)
         if form.is_valid():
             form.save()
+            messages.success(request, f'Usuario {usuario.username} actualizado correctamente.')
             return redirect('gestion_usuarios')
+        else:
+            messages.error(request, 'Por favor corrige los errores en el formulario.')
     else:
-        form = TrabajadorCreationForm(instance=usuario)
-    return render(request, 'panel_admin/form_usuario.html', {'form': form})
+        form = TrabajadorEditForm(instance=usuario)
+    return render(request, 'panel_admin/form_usuario.html', {
+        'form': form,
+        'titulo': f'Editar Usuario: {usuario.username}',
+        'texto_boton': 'Actualizar',
+        'url_volver': reverse('gestion_usuarios'),
+    })
 
 @grupo_requerido('Administrador')
 def eliminar_usuario(request, usuario_id):
     usuario = get_object_or_404(User, id=usuario_id)
     usuario.delete()
+    messages.success(request, f'Usuario {usuario.username} eliminado correctamente.')
     return redirect('gestion_usuarios')
 
 #crud categorias gestion admin
@@ -905,13 +943,10 @@ def editar_categoria(request, categoria_id):
 @grupo_requerido('Administrador')
 def eliminar_categoria(request, categoria_id):
     categoria = get_object_or_404(Categoria, id=categoria_id)
-    if request.method == 'POST':
-        categoria.delete()
-        messages.success(request, 'Categoría eliminada correctamente.')
-        return redirect('gestion_categorias')
-    return render(request, 'panel_admin/confirmar_eliminacion_categoria.html', {'categoria': categoria})
-
-
+    categoria.delete()
+    messages.success(request, 'Categoría eliminada correctamente.')
+    return redirect('gestion_categorias')
+    
 # crud productos gestion admin
 
 @grupo_requerido('Administrador')
@@ -950,6 +985,7 @@ def editar_producto(request, producto_id):
         form = ProductoForm(request.POST, request.FILES, instance=producto)
         if form.is_valid():
             form.save()
+            messages.success(request, f'Producto “{producto.nombre}” editado correctamente.')
             return redirect('gestion_productos')
     else:
         form = ProductoForm(instance=producto)
@@ -965,6 +1001,7 @@ def editar_producto(request, producto_id):
 def eliminar_producto(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
     producto.delete()
+    messages.success(request, "El producto ha sido eliminado correctamente.")
     return redirect('gestion_productos')
 
 #logica contador

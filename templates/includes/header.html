@@ -102,7 +102,7 @@
               </div>
               
             {% else %}
-            <li>Iniciar Sesión 
+            <li><a href="{% url 'login' %}">Iniciar Sesión </a>
             <a href="{% url 'login' %}" class="rounded-circle bg-light p-2 mx-1"><svg width="24" height="24" viewBox="0 0 24 24">
               <use xlink:href="#user"></use>
             </svg></a>
@@ -216,12 +216,16 @@
 </header>
 
 <script>
+  function limpiarBusqueda(texto) {
+    return texto.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, '').trim();
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('search-input');
     const results = document.getElementById('search-results');
   
     input.addEventListener('input', async () => {
-      const query = input.value.trim();
+      const query = limpiarBusqueda(input.value);
       if (query.length < 2) {
         results.innerHTML = '';
         return;

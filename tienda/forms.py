@@ -112,6 +112,22 @@ class TrabajadorCreationForm(UserCreationForm):
         self.fields['groups'].queryset = Group.objects.filter(name__in=GRUPOS_VISIBLES)
         self.fields['groups'].label = "Rol"
 
+class TrabajadorEditForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'groups'] 
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['groups'].queryset = Group.objects.filter(name__in=GRUPOS_VISIBLES)
+        self.fields['groups'].label = "Rol" 
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        if User.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError("Este nombre de usuario ya está en uso.")
+        return username
+
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = User

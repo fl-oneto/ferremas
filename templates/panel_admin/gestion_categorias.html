@@ -16,15 +16,20 @@
     {% endfor %}
   </div>
 {% endif %}
-
+    <div id="reporte-pdf">
     <h2>Categorías</h2>
-    <div class="mb-3">
-        <a href="{% url 'crear_categoria' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Agregar nuevo
-        </a>
-        <a href="{% url 'dashboard_admin' %}" class="btn btn-secondary ms-2">
-            <i class="bi bi-arrow-left-circle"></i> Volver al Dashboard
-        </a>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="mb-3">
+            <a href="{% url 'crear_categoria' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Agregar nueva categoría
+            </a>
+            <a href="{% url 'dashboard_admin' %}" class="btn btn-secondary ms-2">
+                <i class="bi bi-arrow-left-circle"></i> Volver al Dashboard
+            </a>
+        </div>
+        <button id="btn-descargar" class="btn btn-primary">
+            Descargar como PDF
+        </button>
     </div>
     
 
@@ -53,7 +58,11 @@
                     </td>
                     <td>
                         <a href="{% url 'editar_categoria' categoria.id %}" class="btn btn-primary btn-sm">Editar</a>
-                        <a href="{% url 'eliminar_categoria' categoria.id %}" class="btn btn-danger btn-sm">Eliminar</a>
+    
+                        <form action="{% url 'eliminar_categoria' categoria.id %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar esta categoría?');">Eliminar</button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}
@@ -62,5 +71,6 @@
     {% else %}
         <p>No hay categorías registradas.</p>
     {% endif %}
+    </div>
 </div>
 {% endblock %}

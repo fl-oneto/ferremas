@@ -103,7 +103,7 @@
     </div>
   </section>
 
-  <script>
+  {% comment %} <script>
     // Obtener los datos de las regiones y comunas del template
     const regionesComunas = {
       {% for region_id, comunas in regiones_comunas.items %}
@@ -137,4 +137,6 @@
       }
     });
   </script>
-{% endblock %}
+ {% endcomment %}
+
+ {% endblock %}
